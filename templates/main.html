@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <title>MyMessanger: {{ user.username }}</title>
+</head>
+
+<body>
+    <main>
+        <div class="left-panel">
+            <div class="account-wrapper">
+                <span class="current-user_name">{{ user.first_name }} {{ user.last_name }}</span>
+            </div>
+            <div class="search-wrapper">
+                <input type="text" id="search-input" placeholder="Search">
+            </div>
+            <div class="chat-list-wrapper">
+                <div class="chat-list">
+                    <!-- <div class="chat-item">
+                        <div class="chat-item__profile-photo">S</div>
+                        <div class="chat-item__username-wrapper"><span>Some User</span></div>
+                    </div> -->
+                    <div class="empty-label hidden"><span>Ви ще не розпочали жодного чату...</span></div>
+                </div>
+                <div class="result-list hidden">
+                    <div class="empty-label hidden"><span>Нічого не знайдено...</span></div>
+                </div>
+            </div>
+            <a href="{{url_for('logout')}}" id="logout-btn">Вихід</a>
+        </div>
+        <div class="right-panel hidden">
+            <div class="chat-name_wrapper">
+                <div class="chat-name__profile-photo">M</div>
+                <div class="chat-name__username"><span>Den</span></div>
+            </div>
+            <div class="chat-container">
+                <div class="chat-scrollable">
+                    <!-- <span class="message my-msg">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod exercitationem doloribus deserunt eius voluptatum perspiciatis.</span> -->
+                </div>
+            </div>
+            <div class="new-message_wrapper">
+                <input type="text" id="new-message_input" placeholder="Write a message...">
+                <button id="new-message_send-button">Send</button>
+            </div>
+        </div>
+    </main>
+    <script src="/static/js/custom_functions.js"></script>
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+        integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
+        crossorigin="anonymous"></script>
+    <script src="/static/js/main.js"></script>
+</body>
+
+</html>

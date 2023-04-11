@@ -1,0 +1,125 @@
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+main {
+    position: relative;
+    max-width: 500px;
+    width: 100%;
+    padding: 35px;
+    border-radius: 25px;
+    background: #222222;
+    display: flex;
+    flex-direction: column;
+    outline: solid 1px #3a3a3a;
+    overflow: hidden;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+    font-size: 20pt;
+}
+
+form>div {
+    display: flex;
+    flex-direction: column;
+}
+
+form label,
+button {
+    font-size: inherit;
+}
+
+input {
+    max-width: 100%;
+    background: #1f1f1f;
+    border-radius: 15px;
+    border: none;
+    padding: 5px 15px;
+    outline: solid 1px #434343;
+}
+
+input:focus {
+    outline: solid 1px #919191;
+}
+
+
+
+button {
+    padding: 5px;
+    border-radius: 10px;
+    color: #fff;
+    background: #4400b1;
+    cursor: pointer;
+    outline: none;
+    border: none;
+    outline: solid 1px #330085;
+    margin-top: 10px;
+}
+
+button:hover {
+    background: #2a006e;
+}
+
+button:active {
+    background: #210056;
+}
+
+#unfold-acc-creation-form_btn,
+#cancel-acc-creation_btn {
+    padding: 3px;
+    color: #6200ff;
+    font-size: 17pt;
+    align-self: center;
+    cursor: pointer;
+}
+
+#unfold-acc-creation-form_btn:hover,
+#cancel-acc-creation_btn:hover {
+    text-decoration: underline;
+}
+
+#unfold-acc-creation-form_btn:active,
+#cancel-acc-creation_btn:active {
+    color: #3c009e;
+}
+
+.error-msg{
+    color: red;
+    font-size: 15pt;
+}
+
+.error-input{
+    outline-color: red;
+}
+
+.success-msg{
+    color: rgb(0, 208, 0);
+    margin-bottom: 10px;
+}
+
+.wait-block{
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+}
+
+
+
+
+
+.hidden {
+    display: none;
+}

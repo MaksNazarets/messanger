@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/base.css">
+    <link rel="stylesheet" href="/static/css/auth.css">
+    <title>Вхід в систему</title>
+</head>
+
+<body>
+    <main>
+        <form id="login-form">
+            <div>
+                <label for="username">Логін</label>
+                <input type="text" id="username" name="username">
+            </div>
+            <div>
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password">
+            </div>
+            <button type="submit">Увійти</button>
+            <span id="unfold-acc-creation-form_btn">Створити обліковий запис</span>
+        </form>
+        <form id="create-account-form" class="hidden">
+            <div>
+                <label for="first-name">Ім'я:</label>
+                <input type="text" id="first-name" name="first-name">
+            </div>
+            <div>
+                <label for="last-name">Прізвище:</label>
+                <input type="text" id="last-name" name="last-name">
+            </div>
+            <div>
+                <label for="email">Ел. пошта:</label>
+                <input type="email" id="email" name="email">
+            </div>
+            <div>
+                <label for="new-username">Логін:</label>
+                <input type="text" id="new-username" name="new-username">
+            </div>
+            <div>
+                <label for="new-password">Пароль:</label>
+                <input type="password" id="new-password" name="new-password">
+            </div>
+            <button type="submit">Створити аккаунт</button>
+            <span id="cancel-acc-creation_btn">Скасувати</span>
+        </form>
+        <div class="wait-block hidden">
+            <img src="/static/img/wait-icon-without-bg-3.gif" alt="wait-icon">
+        </div>
+    </main>
+    <script src="/static/js/custom_functions.js"></script>
+    <script src="/static/js/auth.js"></script>
+</body>
+
+</html>

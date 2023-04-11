@@ -1,0 +1,6 @@
+table creation.sql
+table-creation-queries.sql
+/fonts (not used)/*
+/__pycache__/*
+/.dist
+/data(for_pythonanywhere)
