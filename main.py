@@ -8,7 +8,7 @@ import os
 app = Flask(__name__)
 
 # app.config.from_object(os.environ['APP_SETTINGS'])
-app.config['SQLALCHEMY_DATABASE_URI'] = "postgres://maks:rMLamqOWrQBg3fUfDW9qlw5XJwWamI05@dpg-cgrha2o2qv2bi03d9r80-a/my_messanger_db"
+app.config['SQLALCHEMY_DATABASE_URI'] = "postgresql://maks:rMLamqOWrQBg3fUfDW9qlw5XJwWamI05@dpg-cgrha2o2qv2bi03d9r80-a/my_messanger_db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.secret_key = 'some_secret_key!'
 
