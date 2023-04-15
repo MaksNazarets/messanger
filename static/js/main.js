@@ -175,7 +175,7 @@ function addChatItem(chat_user, parentEl) {
     unread_label.classList.add("chat-item__unread-label");
     unread_label.textContent = unread_count;
 
-    if (unread_count == 0)
+    if (unread_count == 0 || !unread_count)
         unread_label.classList.add("hidden");
 
     chatItem.appendChild(unread_label);
@@ -199,7 +199,6 @@ function populate_with_chat_items(chat_users, parentEl) {
 
     if (chat_users.length != 0) {
         chat_users.forEach(chat_user => {
-            console.log(chat_users['unread_count'])
             addChatItem(chat_user, parentEl);
         });
     }

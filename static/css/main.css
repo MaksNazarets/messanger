@@ -341,6 +341,7 @@ main {
     padding: 5px 10px;
     text-align: center;
     background: #e4e4e4;
+    min-width: fit-content;
     color: #000000;
     border-radius: 15px;
 }
