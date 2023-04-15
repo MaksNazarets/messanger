@@ -125,7 +125,7 @@ socket.on('search-result', (result_users) => {
     populate_with_chat_items(result_users, result_list);
 })
 
-socket.on('more-chat-messeges-response', messages => {
+socket.on('more-chat-messages-response', messages => {
     populate_chat_with_messages(messages);
 })
 
@@ -175,7 +175,8 @@ function addChatItem(chat_user, parentEl) {
     unread_label.classList.add("chat-item__unread-label");
     unread_label.textContent = unread_count;
 
-    if (unread_count == 0 || !unread_count)
+    console.log(unread_count)
+    if (unread_count == 0 /*|| !unread_count*/)
         unread_label.classList.add("hidden");
 
     chatItem.appendChild(unread_label);

@@ -4,6 +4,15 @@ from flask_login import current_user
 from flask_socketio import emit
 from models import User, Chat, Message
 from sqlalchemy.sql.expression import func
+from sqlalchemy import and_
+
+def get_chat(user1_id, user2_id):
+    chat: Chat = db.session.execute(db.select(Chat).filter(
+            and_(Chat.user1_id == user1_id, Chat.user2_id == user2_id) 
+            | and_(Chat.user1_id == user2_id, Chat.user2_id == user1_id))).scalar()
+    
+    return chat
+
 
 def get_chat_list(user_id, dict_view=True):
     with app.app_context():
@@ -129,7 +138,20 @@ def get_search_result(search_value):
         result_users = []
         for user in users:
             user_data = user.to_dict()
+
+            chat = get_chat(user.id, current_user.id)
+
+            if chat is None:
+                user_data['unread_count'] = 0
+            else:
+                user_data['unread_count'] = db.session.query(func.count(Message.id))\
+                        .filter(Message.chat_id == chat.id,
+                                Message.sender_id == user.id, 
+                                Message.read_by_recipient == False).scalar()
+                
             result_users.append(user_data)
+
+        
 
         emit('search-result', result_users)
 
@@ -153,6 +175,6 @@ def load_more_messages(params):
     msgs_to_return = db.session.query(Message).filter(Message.chat_id==chat.id, Message.id < params['start-message-id']).order_by(Message.timestamp.desc()).limit(25).all()
     
     msgs_to_return = [m.to_dict() for m in msgs_to_return]
-    print(msgs_to_return)
-    emit('more-chat-messeges-response', msgs_to_return)
+    # print(msgs_to_return)
+    emit('more-chat-messages-response', msgs_to_return)
     
