@@ -29,8 +29,8 @@ class User(db.Model, UserMixin):
             'username': self.username,
             'email': self.email,
             'first_name': self.first_name,
-            'last_name': self.last_name
-            # 'session_id': self.session_id
+            'last_name': self.last_name,
+            'is_online': self.session_id is not None
         }
 
 class Chat(db.Model):
@@ -70,6 +70,7 @@ class Message(db.Model):
         db.Integer, db.ForeignKey('users.id'), nullable=False)
     timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     text = db.Column(db.Text, nullable=False)
+    read_by_recipient = db.Column(db.Boolean, default=False)
 
     conversation = db.relationship('Chat')
     sender = db.relationship('User')
@@ -88,7 +89,8 @@ class Message(db.Model):
             'chat_id': self.chat_id,
             'sender_id': self.sender_id,
             'timestamp': self.timestamp.isoformat(),
-            'text': self.text
+            'text': self.text,
+            'read_by_recipient': self.read_by_recipient
         }
 
 class Attachment(db.Model):

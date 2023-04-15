@@ -12,7 +12,7 @@
 
 <body>
     <main>
-        <div class="left-panel">
+        <section class="left-panel">
             <div class="account-wrapper">
                 <span class="current-user_name">{{ user.first_name }} {{ user.last_name }}</span>
             </div>
@@ -24,6 +24,7 @@
                     <!-- <div class="chat-item">
                         <div class="chat-item__profile-photo">S</div>
                         <div class="chat-item__username-wrapper"><span>Some User</span></div>
+                        <div class="chat-item__unread-label">5</div>
                     </div> -->
                     <div class="empty-label hidden"><span>Ви ще не розпочали жодного чату...</span></div>
                 </div>
@@ -32,14 +33,15 @@
                 </div>
             </div>
             <a href="{{url_for('logout')}}" id="logout-btn">Вихід</a>
-        </div>
-        <div class="right-panel hidden">
+        </section>
+        <section class="right-panel hidden">
             <div class="chat-name_wrapper">
                 <div class="chat-name__profile-photo">M</div>
                 <div class="chat-name__username"><span>Den</span></div>
             </div>
             <div class="chat-container">
                 <div class="chat-scrollable">
+                    
                     <!-- <span class="message my-msg">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod exercitationem doloribus deserunt eius voluptatum perspiciatis.</span> -->
                 </div>
             </div>
@@ -47,7 +49,7 @@
                 <input type="text" id="new-message_input" placeholder="Write a message...">
                 <button id="new-message_send-button">Send</button>
             </div>
-        </div>
+        </section>
     </main>
     <script src="/static/js/custom_functions.js"></script>
     <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
