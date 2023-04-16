@@ -119,7 +119,7 @@ def send_message(msg_data):
     recipient_sid = chat.user1.session_id if chat.user2_id == current_user.id else chat.user2.session_id
     # TODO: Insert into Waiting list if recipient_sid is None
 
-    return_data = msg_data
+    return_data = msg.to_dict()
     return_data['my-msg'] = True
 
     emit('new_message', return_data)
@@ -150,8 +150,6 @@ def get_search_result(search_value):
                                 Message.read_by_recipient == False).scalar()
                 
             result_users.append(user_data)
-
-        
 
         emit('search-result', result_users)
 

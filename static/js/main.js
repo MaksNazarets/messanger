@@ -1,13 +1,16 @@
 var open_chat_companion_id = null;
 var open_chat_companion;
 
-let msg_input = document.querySelector('#new-message_input');
-let search_input = document.querySelector('#search-input');
-let chat_list = document.querySelector('.chat-list');
-let result_list = document.querySelector('.result-list');
-let chat_container = document.querySelector('.chat-container')
-let chat_scrollable = document.querySelector('.chat-scrollable');
-let right_panel = document.querySelector('.right-panel')
+const msg_input = document.querySelector('#new-message_input');
+const search_input = document.querySelector('#search-input');
+const chat_list = document.querySelector('.chat-list');
+const result_list = document.querySelector('.result-list');
+const chat_container = document.querySelector('.chat-container')
+const chat_scrollable = document.querySelector('.chat-scrollable');
+const right_panel = document.querySelector('.right-panel')
+const to_last_msg_btn = right_panel.querySelector('.to-lask-msg-btn')
+
+let last_msg_sent_at = {};
 
 let socket = io.connect('http://' + location.hostname + ':' + location.port);
 socket.on('connect', () => {
@@ -23,6 +26,9 @@ socket.on('update_chat_list', (chat_users) => {
 })
 
 socket.on('get_chat_data', (chat_data) => {
+    if(open_chat_companion)
+        last_msg_sent_at[open_chat_companion_id.toString()] = null;
+
     open_chat_companion_id = chat_data['companion']['id'];
     open_chat_companion = chat_data['companion']
 
@@ -33,7 +39,7 @@ socket.on('get_chat_data', (chat_data) => {
     // setting user online status
     let chat_name_wrapper = right_panel.querySelector('.chat-name_wrapper');
 
-    if(open_chat_companion['is_online']) chat_name_wrapper.classList.add('user-online');
+    if (open_chat_companion['is_online']) chat_name_wrapper.classList.add('user-online');
 
     // setting companion data
     right_panel.querySelector('.chat-name__profile-photo').textContent = chat_data['companion']['first_name'][0];
@@ -52,9 +58,9 @@ socket.on('get_chat_data', (chat_data) => {
     let unread_messages = right_panel.querySelectorAll('.message.unread');
 
     if (unread_messages.length > 0) {
-        if(unread_messages[0].classList.contains('my-msg')) return;
+        if (unread_messages[0].classList.contains('my-msg')) return;
 
-        let first_unread_message = unread_messages[unread_messages.length - 1].nextSibling;
+        let first_unread_message = unread_messages[unread_messages.length - 1];
 
         let unread_section = document.createElement('div');
         unread_section.classList.add('unread-msgs-section');
@@ -67,7 +73,7 @@ socket.on('get_chat_data', (chat_data) => {
 
         unread_section.appendChild(document.createElement('div'));
 
-        chat_scrollable.insertBefore(unread_section, first_unread_message);
+        chat_scrollable.insertBefore(unread_section, first_unread_message.nextSibling);
         unread_section.classList.remove('hidden');
     }
 
@@ -86,39 +92,44 @@ socket.on('get_chat_data', (chat_data) => {
 })
 
 socket.on('new_message', (msg_data) => {
-    if (msg_data['sender_id'] != open_chat_companion_id 
+    if (msg_data['sender_id'] != open_chat_companion_id
         && !msg_data['my-msg']) {
-            
+
         let chat_item = document.querySelector(`.chat-item[data-user-id='${msg_data['sender_id']}']`);
         let unread_label = chat_item.querySelector('.chat-item__unread-label');
-        if(unread_label.classList.contains('hidden')){
+        if (unread_label.classList.contains('hidden')) {
             unread_label.classList.remove('hidden');
             unread_label.textContent = 1;
         }
-        else{
+        else {
             unread_label.textContent = parseInt(unread_label.textContent) + 1;
         }
-    };
-
-    let message_el = document.createElement("span");
-    message_el.classList.add("message");
-    message_el.classList.add("msg-minimized");
-    if (msg_data['sender_id'] != open_chat_companion_id) {
-        message_el.classList.add("my-msg");
     }
-    message_el.setAttribute('data-id', msg_data['id']);
-    message_el.textContent = msg_data['text'];
+    else {
+        let message_el = document.createElement("span");
+        message_el.classList.add("message");
+        message_el.classList.add("msg-minimized");
+        if (msg_data['sender_id'] != open_chat_companion_id) {
+            message_el.classList.add("my-msg");
+        }
+        message_el.setAttribute('data-id', msg_data['id']);
+        message_el.textContent = msg_data['text'];
 
-    if (msg_data['sender_id'] == open_chat_companion_id || msg_data['my-msg']) {
-        last_msg = chat_scrollable.querySelector('.message');
-        chat_scrollable.insertBefore(message_el, last_msg);
+        if (msg_data['sender_id'] == open_chat_companion_id || msg_data['my-msg']) {
+            last_msg = chat_scrollable.querySelector('.message');
+            chat_scrollable.insertBefore(message_el, last_msg);
+        }
+
+        if (msg_data['sender_id'] == open_chat_companion_id)
+            // if (isMessageVisible(message_el))
+            socket.emit('mark-msgs-as-read', [message_el.getAttribute('data-id')]);
+
+        setTimeout(() => {
+            message_el.classList.remove("msg-minimized");
+        }, 1);
+
+        msg_input.value = '';
     }
-
-    setTimeout(() => {
-        message_el.classList.remove("msg-minimized");
-    }, 1);
-
-    msg_input.value = '';
 })
 
 socket.on('search-result', (result_users) => {
@@ -126,20 +137,25 @@ socket.on('search-result', (result_users) => {
 })
 
 socket.on('more-chat-messages-response', messages => {
+    if (messages.length > 0)
+        chat_scrollable.removeChild(
+            document.querySelector('.date-divider:last-of-type')
+        );
+
     populate_chat_with_messages(messages);
 })
 
 socket.on('user-online-status-update', user => {
     let chat_item = document.querySelector(`.chat-item[data-user-id='${user['id']}']`)
-    if(chat_item){
-        if(user['is_online']) chat_item.classList.add('user-online')
+    if (chat_item) {
+        if (user['is_online']) chat_item.classList.add('user-online')
         else chat_item.classList.remove('user-online')
     }
 
-    if(open_chat_companion_id == user['id']){
+    if (open_chat_companion_id == user['id']) {
         let chat_name_wrapper = right_panel.querySelector('.chat-name_wrapper');
         console.log('hello')
-        if(user['is_online']) chat_name_wrapper.classList.add('user-online')
+        if (user['is_online']) chat_name_wrapper.classList.add('user-online')
         else chat_name_wrapper.classList.remove('user-online')
     }
 })
@@ -156,7 +172,7 @@ function addChatItem(chat_user, parentEl) {
 
     let chatItem = document.createElement("div");
     chatItem.classList.add("chat-item");
-    if(chat_user['is_online']) chatItem.classList.add("user-online");
+    if (chat_user['is_online']) chatItem.classList.add("user-online");
 
     let profilePhoto = document.createElement("div");
     profilePhoto.textContent = full_name[0];
@@ -210,27 +226,49 @@ function populate_with_chat_items(chat_users, parentEl) {
 }
 
 
-function populate_chat_with_messages(messages) { 
+function populate_chat_with_messages(messages) {
+
+    function insertDateDivider() {
+        let date_divider = document.createElement('div');
+        date_divider.classList.add('date-divider');
+        let date = document.createElement('span');
+        date.textContent = last_msg_sent_at[open_chat_companion_id.toString()];
+        date_divider.appendChild(date);
+        chat_scrollable.appendChild(date_divider);
+    }
+
     if (messages.length == 0) {
         chat_container.querySelector('.message:last-of-type').setAttribute('data-the-first-msg', true);
         return;
     }
-    
+
+    let month_names = ['січня', "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"]
     messages.forEach(message => {
+        let msg_date = new Date(message['timestamp'])
+        let sent_at = `${msg_date.getDate()} ${month_names[msg_date.getMonth()]} ${msg_date.getFullYear()}`;
+
+        if (!last_msg_sent_at[open_chat_companion_id.toString()])
+            last_msg_sent_at[open_chat_companion_id.toString()] = sent_at
+
         let message_el = document.createElement("span");
         message_el.classList.add("message");
         if (message['sender_id'] != open_chat_companion_id) {
             message_el.classList.add("my-msg");
         }
         message_el.setAttribute('data-id', message['id']);
-        message_el.textContent = message['text'];
+        message_el.textContent = message['text']
 
         if (!message['read_by_recipient'])
             message_el.classList.add('unread');
 
-        chat_scrollable.appendChild(message_el);
-    })
 
+        if (sent_at != last_msg_sent_at[open_chat_companion_id.toString()] && chat_scrollable.hasChildNodes()) {
+            insertDateDivider();
+            last_msg_sent_at[open_chat_companion_id.toString()] = sent_at
+        }
+        chat_scrollable.appendChild(message_el);
+    });
+    insertDateDivider()
 }
 
 document.querySelector('#new-message_send-button').addEventListener('click', () => {
@@ -238,7 +276,7 @@ document.querySelector('#new-message_send-button').addEventListener('click', () 
         socket.emit('send_message', { 'to_user_id': open_chat_companion_id, 'text': msg_input.value });
 
         let unread_label = document.querySelector('.unread-msgs-section');
-        if(unread_label)
+        if (unread_label)
             chat_scrollable.removeChild(unread_label);
     }
     else {
@@ -288,13 +326,26 @@ chat_container.addEventListener('scroll', () => {
                 load_more_msgs_query_sent = false;
             }, 5000);
         };
+
+        // ### For now working bad
+        // console.log(isMessageVisible(last_message))
+        // if(!isMessageVisible(last_message))
+        //     to_last_msg_btn.classList.remove('hidden');
+        // else
+        //     to_last_msg_btn.classList.add('hidden');
+
     };
 })
+
+to_last_msg_btn.addEventListener('click', () => {
+    chat_container.scrollTop = 0;
+    to_last_msg_btn.classList.add('hidden');
+});
 
 const observer_config = { childList: true };
 
 // Callback function to execute when mutations are observed
-const callback = function (mutationsList, observer) {
+const chatListChangeCallback = function (mutationsList, observer) {
     for (let mutation of mutationsList) {
 
         let empty_label = mutation.target.querySelector('.empty-label');
@@ -305,6 +356,17 @@ const callback = function (mutationsList, observer) {
     }
 };
 
-const observer = new MutationObserver(callback);
-observer.observe(chat_list, observer_config);
-observer.observe(result_list, observer_config);
+const chat_list_change_observer = new MutationObserver(chatListChangeCallback);
+chat_list_change_observer.observe(chat_list, observer_config);
+chat_list_change_observer.observe(result_list, observer_config);
+
+
+let last_message = chat_container.querySelector('.message')
+
+const chatChangeCallback = function (mutationsList, observer) {
+    console.log('hello')
+    last_message = chat_container.querySelector('.message')
+};
+
+const chat_change_observer = new MutationObserver(chatChangeCallback);
+chat_change_observer.observe(chat_scrollable, observer_config);

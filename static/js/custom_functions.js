@@ -13,8 +13,8 @@ function insertNewElement(tag, class_list, text_content, sibling_element = null,
         parent_element.insertBefore(element, sibling_element);
 }
 
-function isMessageVisible(message) {
-    let messageRect = message.getBoundingClientRect();
+function isMessageVisible(message_element) {
+    let messageRect = message_element.getBoundingClientRect();
     let chatDiv = document.querySelector('.chat-container');
     let chatRect = chatDiv.getBoundingClientRect();
 
@@ -24,7 +24,7 @@ function isMessageVisible(message) {
     );
 }
 
-function scrollToMessage(message) {
+function scrollToMessage(message) { //isn't working
     let chatDiv = document.querySelector('.chat-container');
     let chatRect = chatDiv.getBoundingClientRect();
     let messageRect = message.getBoundingClientRect();

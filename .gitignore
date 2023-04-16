@@ -4,3 +4,4 @@ table-creation-queries.sql
 /__pycache__/*
 /.dist
 /data(for_pythonanywhere)
+/ts src

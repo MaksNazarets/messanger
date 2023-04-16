@@ -39,7 +39,7 @@ class Chat(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user1_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     user2_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False, )
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     user1 = db.relationship('User', foreign_keys=[user1_id])
     user2 = db.relationship('User', foreign_keys=[user2_id])
