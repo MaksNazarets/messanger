@@ -41,15 +41,42 @@
             </div>
             <div class="chat-container">
                 <div class="chat-scrollable">
-                    
-                    <!-- <span class="message my-msg">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod exercitationem doloribus deserunt eius voluptatum perspiciatis.</span>
+
+                    <!-- <div class="message my-msg">
+                        <span>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod
+                            exercitationem doloribus deserunt eius voluptatum perspiciatis.</span>
+                        <div class="msg-meta">
+                            <span class="sent-at-time">15:20</span>
+                            <img class="delivery-status" src="/static/img/check-mark.svg" alt="check-mark">
+                        </div>
+                    </div>
                     <div class="date-divider"><span>15 квітня</span></div>
-                    <span class="message my-msg">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod exercitationem doloribus deserunt eius voluptatum perspiciatis.</span>
-                    <span class="message my-msg">Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod exercitationem doloribus deserunt eius voluptatum perspiciatis.</span> -->
+                    <div class="message my-msg">
+                        <span>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod
+                            exercitationem doloribus deserunt eius voluptatum perspiciatis.Lorem ipsum dolor sit amet
+                            consectetur adipisicing dolor sit amet consectetur </span>
+                        <div class="msg-meta">
+                            <span class="sent-at-time">15:20</span>
+                            <img class="delivery-status" src="/static/img/check-mark.svg" alt="check-mark">
+                            <img class="delivery-status-succeeds" src="/static/img/check-mark.svg" alt="check-mark">
+                        </div>
+                    </div>
+                    <div class="message my-msg">
+                        <span>Lorem ipsum dolor sit amet consectetur adipisicing elit. Quod
+                            exercitationem doloribus deserunt eius voluptatum perspiciatis.</span>
+                        <div class="msg-meta">
+                            <span class="sent-at-time">15:20</span>
+                            <img class="delivery-status" src="/static/img/check-mark.svg" alt="check-mark">
+                        </div>
+                    </div> -->
                 </div>
             </div>
-            <div class="to-lask-msg-btn hidden">
-                <svg xmlns="http://www.w3.org/2000/svg" id="arrow" x="0" y="0" version="1.1" viewBox="0 0 29 29" xml:space="preserve"><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" d="m20.5 11.5-6 6-6-6"></path></svg>
+            <div class="to-last-msg-btn hidden">
+                <svg xmlns="http://www.w3.org/2000/svg" id="arrow" x="0" y="0" version="1.1" viewBox="0 0 29 29"
+                    xml:space="preserve">
+                    <path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round"
+                        stroke-miterlimit="10" stroke-width="2" d="m20.5 11.5-6 6-6-6"></path>
+                </svg>
             </div>
             <div class="new-message_wrapper">
                 <input type="text" id="new-message_input" placeholder="Write a message...">
@@ -57,11 +84,12 @@
             </div>
         </section>
     </main>
-    <script src="/static/js/custom_functions.js"></script>
-    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"
+    <!-- <script id="common-js" data-main="/js/main.js" src="./../node_modules/events/tests/common.js"></script> -->
+    <script type="module" src="https://cdn.socket.io/4.6.0/socket.io.min.js"
         integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
         crossorigin="anonymous"></script>
-    <script src="/static/js/main.js"></script>
+    <script type="module" src="/static/js/custom_functions.js"></script>
+    <script type="module" src="/static/js/main.js"></script>
 </body>
 
 </html>

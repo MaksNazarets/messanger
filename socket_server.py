@@ -35,7 +35,7 @@ def get_chat_list(user_id, dict_view=True):
             else:
                 chat_users.append(chat_user)
 
-    print(f"Chat users: {chat_users}")
+    # print(f"Chat users: {chat_users}")
     return chat_users
 
 

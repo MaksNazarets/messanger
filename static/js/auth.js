@@ -1,3 +1,5 @@
+import { insertNewElement } from './custom_functions.js'
+
 const login_form = document.querySelector('#login-form');
 const create_account_form = document.querySelector('#create-account-form');
 
@@ -18,12 +20,12 @@ create_account_form.addEventListener('submit', (event) => {
 
     document.querySelector('.wait-block').classList.remove('hidden')
 
-    error_elems = create_account_form.querySelectorAll('.error-msg');
-    for (ee of error_elems)
+    const error_elems = create_account_form.querySelectorAll('.error-msg');
+    for (let ee of error_elems)
         ee.remove();
 
-    inputs = create_account_form.querySelectorAll('input');
-    for (input of inputs)
+    const inputs = create_account_form.querySelectorAll('input');
+    for (let input of inputs)
         input.classList.remove('error-input');
 
     const formData = new FormData(create_account_form);
@@ -43,10 +45,10 @@ create_account_form.addEventListener('submit', (event) => {
         .then(data => {
             console.log(data);
             if ('message' in data) {
-                insertNewElement('span', ['success-msg'], 'Обліковий запис успішно створено!', login_form, after = false)
+                insertNewElement('span', ['success-msg'], 'Обліковий запис успішно створено!', login_form, false);
                 login_form.classList.toggle('hidden');
                 create_account_form.classList.toggle('hidden');
-                for (input of inputs)
+                for (let input of inputs)
                     input.value = '';
             } else if ('errors' in data) {
                 let errors = data['errors']
@@ -104,15 +106,15 @@ login_form.addEventListener('submit', (event) => {
                 window.location.href = "/";
             }
             else {
-                error_elems = document.querySelectorAll('.error-msg');
-                for (ee of error_elems)
+                const error_elems = document.querySelectorAll('.error-msg');
+                for (let ee of error_elems)
                     ee.remove();
 
-                success_elems = document.querySelectorAll('.success-msg');
-                for (se of success_elems)
+                const success_elems = document.querySelectorAll('.success-msg');
+                for (let se of success_elems)
                     se.remove();
 
-                insertNewElement('span', ['error-msg'], 'Неправильний логін або пароль', login_form, after=false)
+                insertNewElement('span', ['error-msg'], 'Неправильний логін або пароль', login_form, false)
             }
         });
 })
