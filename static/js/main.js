@@ -67,7 +67,6 @@ socket.on('get_chat_data', (chat_data) => {
         }
     });
     socket.emit('mark-msgs-as-read', just_read_msgs_ids);
-    socket.emit('mark-msgs-as-read', just_read_msgs_ids);
     //removing unread label from chat item
     const chat_item = document.querySelector(`.chat-item[data-user-id="${open_chat_companion_id}"]`);
     if (chat_item) {
@@ -102,10 +101,13 @@ socket.on('new_message', (msg_data) => {
         message_el.textContent = msg_data['text'];
         if (msg_data['sender_id'] == open_chat_companion_id || msg_data['my-msg']) {
             const last_msg = chat_scrollable.querySelector('.message');
-            const msg_date = new Date(msg_data['timestamp']);
+            const utc_date = new Date(msg_data['timestamp']);
+            const three_hours_in_ms = 10800000;
+            const msg_date = new Date(utc_date.getTime() + three_hours_in_ms); //to Ukrainian time
             const sent_at = `${msg_date.getDate()} ${month_names[msg_date.getMonth()]} ${msg_date.getFullYear()}`;
             chat_scrollable.insertBefore(message_el, last_msg);
             if (sent_at != last_msg_sent_at[open_chat_companion_id.toString()]) {
+                console.log(sent_at);
                 last_msg_sent_at[open_chat_companion_id.toString()] = sent_at;
                 insertDateDivider(true, last_msg);
             }
@@ -337,7 +339,6 @@ chat_list_change_observer.observe(chat_list, observer_config);
 chat_list_change_observer.observe(result_list, observer_config);
 let last_message = chat_container.querySelector('.message');
 const chatChangeCallback = function (mutationsList, observer) {
-    console.log('hello');
     last_message = chat_container.querySelector('.message');
 };
 const chat_change_observer = new MutationObserver(chatChangeCallback);
