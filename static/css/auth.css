@@ -2,7 +2,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 100dvh;
 }
 
 main {
@@ -37,7 +37,7 @@ button {
 }
 
 input {
-    max-width: 100%;
+    width: 100%;
     background: #1f1f1f;
     border-radius: 15px;
     border: none;
@@ -49,7 +49,9 @@ input:focus {
     outline: solid 1px #919191;
 }
 
-
+#new-password{
+    padding-right: 2em;
+}
 
 button {
     padding: 5px;
@@ -61,6 +63,7 @@ button {
     border: none;
     outline: solid 1px #330085;
     margin-top: 10px;
+    user-select: none;
 }
 
 button:hover {
@@ -88,6 +91,41 @@ button:active {
 #unfold-acc-creation-form_btn:active,
 #cancel-acc-creation_btn:active {
     color: #3c009e;
+}
+
+.password-group{
+    position: relative;
+    display: flex;
+}
+
+.show-pass-btn{
+    position: absolute;
+    right: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 1.7em;
+    height: 100%;
+    padding: .3em;
+    background: #2f2f2f;
+    border-radius: 0 15px 15px 0    ;
+}
+
+.show-pass-btn svg{
+    max-height: 2em;
+    fill: #fff;
+}
+
+.show-pass-btn:hover{
+    background: #393939;
+}
+
+.show-pass-btn:hover svg{
+    transform: scale(1.1);
+}
+
+.show-pass-btn:active{
+    background: #292929;
 }
 
 .error-msg{

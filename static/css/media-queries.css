@@ -1,0 +1,22 @@
+@media only screen and (max-width: 768px) {
+    .main{
+        height: 100dvh;
+    }
+    .left-panel {
+        max-width: 12em;
+        height: 100dvh;
+    }
+}
+
+@media only screen and (max-width: 600px) {
+    .left-panel {
+        position: fixed;
+        left: 0;
+        z-index: 50;
+        max-width: 100dvw;
+    }
+
+    .chat-exit-btn {
+        display: flex;
+    }
+}

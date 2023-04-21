@@ -1,7 +1,8 @@
 main {
-    max-width: 1000px;
+    /* max-width: 1000px; */
+    width: 100dvw;
     width: 100%;
-    height: 100vh;
+    height: 100dvh;
     margin: 0 auto;
     background: #222222;
     display: flex;
@@ -14,8 +15,8 @@ main {
     position: relative;
     display: flex;
     flex-direction: column;
-    max-width: 300px;
-    min-width: 50px;
+    max-width: 15em;
+    min-width: 5em;
     width: 100%;
     padding: 3px;
     background: #2a2a2a;
@@ -34,7 +35,7 @@ main {
 }
 
 .search-wrapper input {
-    max-width: 100%;
+    width: 100%;
     background: #1f1f1f;
     border-radius: 15px;
     border: none;
@@ -85,8 +86,8 @@ main {
 
 .chat-item__profile-photo {
     position: relative;
-    min-height: 50px;
-    min-width: 50px;
+    min-height: 2.1em;
+    min-width: 2.1em;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -168,6 +169,7 @@ main {
     width: 100%;
     display: flex;
     flex-direction: column;
+    align-items: center;
     /* background: url('../img/chat-bg.jpg');
     background-size: cover;
     background-position: center; */
@@ -180,19 +182,40 @@ main {
 /* } */
 
 .chat-name_wrapper {
+    position: relative;
     width: 100%;
-    padding: 10px;
+    display: flex;  
+    z-index: 10;
+    background: #1a1a1a;
+}
+
+.chat-exit-btn{
+    display: none;
+    /* display: flex; */
+    justify-content: center;
+    align-items: center;
+    max-width: 2.5em;
+    padding: 0.5em 0.7em;
+}
+
+.chat-exit-btn svg{
+    fill: #919191;
+    height: 1em;
+}
+
+.companion-info{
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #1a1a1a;
-    z-index: 10;
+    padding: 10px;
+    width: 100%;
+    cursor: pointer;
 }
 
 .chat-name__profile-photo {
     position: relative;
-    height: 45px;
-    width: 45px;
+    height: 2em;
+    width: 2em;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -211,7 +234,7 @@ main {
     background: rgb(170, 170, 170);
 }
 
-.chat-name_wrapper.user-online .chat-name__profile-photo::after {
+.companion-info.user-online .chat-name__profile-photo::after {
     background: rgb(0, 255, 0);
 }
 
@@ -220,12 +243,16 @@ main {
     font-size: 20pt;
 }
 
+
 .new-message_wrapper {
     width: 100%;
     display: flex;
     padding: 10px;
     align-items: center;
     gap: 10px;
+
+    /* testing */
+    max-width: 800px;
 }
 
 #new-message_input {
@@ -273,6 +300,9 @@ main {
     max-height: 100%;
     overflow-y: auto;
     scroll-behavior: smooth;
+
+    /* testing */
+    max-width: 800px;
 }
 
 .chat-scrollable {
@@ -283,7 +313,7 @@ main {
     min-height: max-content;
     gap: 5px;
     padding: 20px;
-    padding-top: 30vh;
+    padding-top: 3dvh;
     transition: height .15s;
 }
 
@@ -294,7 +324,7 @@ main {
     flex-direction: column;
     width: fit-content;
     max-width: 80%;
-    background: #161616;
+    background: #2a2a2a;
     font-size: 17pt;
     border-radius: 15px;
     border-bottom-left-radius: 0;
@@ -309,12 +339,12 @@ main {
     height: 0;
     left: -9px;
     bottom: 0px;
-    border-bottom: 10px solid #161616;
+    border-bottom: 10px solid #2a2a2a;
     border-left: 10px solid transparent;
 }
 
-.message > span{
-    padding: 7px 10px 0 10px;
+.message>span {
+    padding: 5px 10px 0 10px;
 }
 
 .message .msg-meta {
@@ -323,14 +353,16 @@ main {
     align-items: center;
     justify-content: start;
     gap: 3px;
-    padding: 0 4px 5px 7px;
+    padding: 0 10px 5px 4px;
     max-height: 1em;
     font-size: 13pt;
     color: #c8c8c8;
 }
 
-.message.my-msg .msg-meta{
+.message.my-msg .msg-meta {
     justify-content: end;
+    padding: 0 4px 5px 10px;
+
 }
 
 .sent-at-time {
@@ -338,14 +370,14 @@ main {
 }
 
 .delivery-status,
-.delivery-status-succeed {
+.delivery-status-succeeded {
     display: none;
     max-height: 0.7em;
 }
 
-.delivery-status-succeed {
+.delivery-status-succeeded {
     position: absolute;
-    right: -2px
+    right: -1px
 }
 
 .message.my-msg {
@@ -355,7 +387,6 @@ main {
     border-bottom-right-radius: 0;
     transform-origin: right;
 }
-
 
 .message.my-msg::before {
     left: auto;
@@ -369,8 +400,12 @@ main {
 }
 
 .message.my-msg .delivery-status,
-.delivery-status-succeed {
+.message.my-msg .delivery-status-succeeded {
     display: block;
+}
+
+.message.my-msg.unread .delivery-status-succeeded {
+    display: none;
 }
 
 .message.msg-minimized {
@@ -396,7 +431,7 @@ main {
 }
 
 .unread-msgs-section-label {
-    padding: 5px 10px;
+    padding: 3px 10px;
     text-align: center;
     background: #e4e4e4;
     min-width: fit-content;
@@ -404,7 +439,7 @@ main {
     border-radius: 15px;
 }
 
-.to-lask-msg-btn {
+.to-last-msg-btn {
     position: absolute;
     display: flex;
     justify-content: center;
@@ -418,21 +453,25 @@ main {
     border-radius: 50%;
     border: 1px solid #313131;
     box-shadow: 0 2px 5px #000;
+    transition: .1s;
 }
 
-.to-lask-msg-btn:hover {
+.to-last-msg-btn:hover {
     border: 1px solid #2d0076;
     background: #4400b1;
 }
 
-.to-lask-msg-btn>svg>path {
+.to-last-msg-btn>svg>path {
     stroke: #000000;
 }
 
-.to-lask-msg-btn:hover>svg>path {
+.to-last-msg-btn:hover>svg>path {
     stroke: #fff;
 }
 
+.to-last-msg-btn.minimized{
+    transform: scale(0);
+}
 
 .date-divider {
     display: flex;
@@ -446,6 +485,132 @@ main {
     border-radius: 15px;
     background: rgba(0, 0, 0, 0.3);
     font-size: 18pt;
+    text-align: center;
+}
+
+
+/* user info section */
+
+.full-screen-container {
+    position: fixed;
+    width: 100dvw;
+    height: 100dvh;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.5)
+}
+
+.user-info_wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-width: 20em;
+    width: 100%;
+    border-radius: 15px;
+    overflow: hidden;
+    background: rgb(32, 32, 32);
+    transition: 0.1s;
+}
+
+
+.user-info_wrapper.minimized {
+    transform: scale(0.9);
+}
+
+.user-info__title {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    text-align: center;
+    padding: 0.5em;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.user-info__profile-photo {
+    height: 20em;
+    /* background-image: url('/static/img/avatar_512x512.png'); */
+    background-image: url('/static/img/Zugpsitze_mountain.jpg');
+    background-position: center;
+    background-size: cover;
+}
+
+.credentials-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2em;
+}
+
+.credentials-container .field {
+    padding: 0.7em;
+    background: #292929;
+    font-size: 1.1em;
+}
+
+.user-info_send-msg-btn {
+    margin-top: 3px;
+    padding: 0.7em;
+    text-align: center;
+    background: #390095;
+    transition: 0.2s;
+    outline: none;
+    border: none;
+}
+
+.user-info_send-msg-btn:hover {
+    background: #270067;
+}
+
+
+.user-info_send-msg-btn:active {
+    background: #1f0050;
+}
+
+.no-network-wrapper {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 20em;
+    width: 100%;
+    padding: 50px 0;
+    border-radius: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 100;
+}
+
+.context-menu{
+    position: fixed;
+    background: #000;
+    border-radius: 15px;
+    overflow: hidden;
+    z-index: 70;
+}
+
+.context-menu-item{
+    padding: 0.2em 0.5em;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+
+.context-menu-item:hover{
+    background: #1d1d1d;
+}
+
+.backdrop{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 50;
 }
 
 /* Scrollbar */
