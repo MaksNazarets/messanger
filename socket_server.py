@@ -127,9 +127,9 @@ def send_message(msg_data):
     return_data = msg.to_dict()
     return_data['my-msg'] = True
 
-    emit('new_message', return_data)
+    emit('new-message', return_data)
     if recipient_sid is not None:
-        emit('new_message', msg.to_dict(), room=recipient_sid)
+        emit('new-message', msg.to_dict(), room=recipient_sid)
 
 
 @socketio.on('search-event')

@@ -1,20 +1,20 @@
 var _a;
 import { isMessageVisible } from '/static/js/custom_functions.js';
 import { ContextMenu } from './classes/ContextMenu.js';
-var open_chat_companion_id = 0;
-var open_chat_companion;
-var msg_input = document.querySelector('#new-message_input');
-var search_input = document.querySelector('#search-input');
-var chat_list = document.querySelector('.chat-list');
-var result_list = document.querySelector('.result-list');
-var chat_container = document.querySelector('.chat-container');
-var chat_scrollable = document.querySelector('.chat-scrollable');
-var right_panel = document.querySelector('.right-panel');
-var to_last_msg_btn = document.querySelector('.to-last-msg-btn');
-var last_msg_sent_at = {};
-var month_names = ['січня', "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
-var first_message = chat_container.querySelector('.message:last-of-type');
-var third_message = chat_container.querySelector('.message:nth-last-of-type(3)');
+var openChatCompanionId = 0;
+var openChatCompanion;
+var msgInput = document.querySelector('#new-message_input');
+var searchInput = document.querySelector('#search-input');
+var chatList = document.querySelector('.chat-list');
+var resultList = document.querySelector('.result-list');
+var chatContainer = document.querySelector('.chat-container');
+var chatScrollable = document.querySelector('.chat-scrollable');
+var rightPanel = document.querySelector('.right-panel');
+var toLastMsgBtn = document.querySelector('.to-last-msg-btn');
+var lastMsgSentAt = {};
+var monthNames = ['січня', "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
+var firstMessage = chatContainer.querySelector('.message:last-of-type');
+var thirdMessage = chatContainer.querySelector('.message:nth-last-of-type(3)');
 // let currentContextMenu: ContextMenu | null = null;
 var socket = io.connect('http://' + location.hostname + ':' + location.port);
 socket.on('connect', function () {
@@ -27,64 +27,64 @@ socket.on('disconnect', function () {
     console.log('disconnected :(');
     (_a = document.querySelector('.no-network-wrapper')) === null || _a === void 0 ? void 0 : _a.classList.remove('hidden');
 });
-socket.on('update_chat_list', function (chat_users) {
-    populate_with_chat_items(chat_users, chat_list);
+socket.on('update_chat_list', function (chatUsers) {
+    populateWithChatItems(chatUsers, chatList);
 });
-socket.on('get_chat_data', function (chat_data) {
+socket.on('get_chat_data', function (chatData) {
     var _a;
-    if (open_chat_companion_id != 0)
-        last_msg_sent_at[open_chat_companion_id.toString()] = null;
-    open_chat_companion_id = chat_data['companion']['id'];
-    open_chat_companion = chat_data['companion'];
-    // console.log(chat_data);
-    right_panel.classList.remove('hidden');
+    if (openChatCompanionId != 0)
+        lastMsgSentAt[openChatCompanionId.toString()] = null;
+    openChatCompanionId = chatData['companion']['id'];
+    openChatCompanion = chatData['companion'];
+    // console.log(chatData);
+    rightPanel.classList.remove('hidden');
     // setting user online status
-    var companion_info = right_panel.querySelector('.companion-info');
-    if (open_chat_companion['is_online'])
-        companion_info.classList.add('user-online');
+    var companionInfo = rightPanel.querySelector('.companion-info');
+    if (openChatCompanion['is_online'])
+        companionInfo.classList.add('user-online');
     else
-        companion_info.classList.remove('user-online');
-    companion_info.addEventListener('click', function () {
+        companionInfo.classList.remove('user-online');
+    companionInfo.addEventListener('click', function () {
         openUserInfoWindow(companion);
     });
     // setting companion data
-    right_panel.querySelector('.chat-name__profile-photo').textContent = chat_data['companion']['first_name'][0];
-    var companion = open_chat_companion;
-    right_panel.querySelector('.chat-name__username').textContent = "".concat(companion['first_name'], " ").concat(companion['last_name']);
+    rightPanel.querySelector('.chat-name__profile-photo').textContent = chatData['companion']['first_name'][0];
+    var companion = openChatCompanion;
+    rightPanel.querySelector('.chat-name__username').textContent = "".concat(companion['first_name'], " ").concat(companion['last_name']);
     // populating chat with messages
-    chat_scrollable.innerHTML = '';
-    populate_chat_with_messages(chat_data['messages']);
+    chatScrollable.innerHTML = '';
+    populateChatWithMessages(chatData['messages']);
     // Inserting 'unread' label to chat
-    var unread_messages = right_panel.querySelectorAll('.message.unread');
-    if (unread_messages.length > 0
-        && !unread_messages[0].classList.contains('my-msg')) {
-        var first_unread_message = unread_messages[unread_messages.length - 1];
-        var unread_section = document.createElement('div');
-        unread_section.classList.add('unread-msgs-section');
-        unread_section.appendChild(document.createElement('div'));
-        var unread_label = document.createElement('span');
-        unread_label.classList.add('unread-msgs-section-label');
-        unread_label.textContent = 'Непрочитані повідомлення';
-        unread_section.appendChild(unread_label);
-        unread_section.appendChild(document.createElement('div'));
-        chat_scrollable.insertBefore(unread_section, first_unread_message.nextSibling);
-        unread_section.classList.remove('hidden');
+    var unreadMessages = rightPanel.querySelectorAll('.message.unread');
+    if (unreadMessages.length > 0
+        && !unreadMessages[0].classList.contains('my-msg')) {
+        var firstUnreadMessage = unreadMessages[unreadMessages.length - 1];
+        var unreadSection = document.createElement('div');
+        unreadSection.classList.add('unread-msgs-section');
+        unreadSection.appendChild(document.createElement('div'));
+        var unreadLabel = document.createElement('span');
+        unreadLabel.classList.add('unread-msgs-section-label');
+        unreadLabel.textContent = 'Непрочитані повідомлення';
+        unreadSection.appendChild(unreadLabel);
+        unreadSection.appendChild(document.createElement('div'));
+        chatScrollable.insertBefore(unreadSection, firstUnreadMessage.nextSibling);
+        unreadSection.classList.remove('hidden');
     }
-    var just_read_msgs_ids = [];
-    unread_messages.forEach(function (msg_el) {
-        msg_el.classList.remove('unread');
-        var msg_id = parseInt(msg_el.getAttribute('data-id') || '');
-        if (!isNaN(msg_id)) {
-            just_read_msgs_ids.push(msg_id);
+    var justReadMsgsIds = [];
+    unreadMessages.forEach(function (msgEl) {
+        msgEl.classList.remove('unread');
+        var msgId = parseInt(msgEl.getAttribute('data-id') || '');
+        if (!isNaN(msgId)) {
+            justReadMsgsIds.push(msgId);
         }
     });
-    socket.emit('mark-msgs-as-read', just_read_msgs_ids);
+    socket.emit('mark-msgs-as-read', justReadMsgsIds);
     //removing unread label from chat item
-    var chat_item = document.querySelector(".chat-item[data-user-id=\"".concat(open_chat_companion_id, "\"]"));
-    if (chat_item) {
-        var unread_label = chat_item.querySelector('.chat-item__unread-label');
-        if (unread_label)
-            unread_label.classList.add('hidden');
+    var chatItem = document.querySelector(".chat-item[data-user-id=\"".concat(openChatCompanionId, "\"]"));
+    if (chatItem) {
+        var unreadLabel = chatItem.querySelector('.chat-item__unread-label');
+        if (unreadLabel)
+            unreadLabel.classList.add('hidden');
     }
     // check if the media query is currently active
     if (window.innerWidth < 600) {
@@ -92,170 +92,170 @@ socket.on('get_chat_data', function (chat_data) {
         (_a = document.querySelector('.left-panel')) === null || _a === void 0 ? void 0 : _a.classList.add('hidden');
     }
 });
-socket.on('new_message', function (msg_data) {
-    if (msg_data['sender_id'] != open_chat_companion_id
-        && !msg_data['my-msg']) {
-        var chat_item = document.querySelector(".chat-item[data-user-id='".concat(msg_data['sender_id'], "']"));
-        if (!chat_item)
+socket.on('new-message', function (msgData) {
+    if (msgData['sender_id'] != openChatCompanionId && !msgData['my-msg']) {
+        var chatItem = document.querySelector(".chat-item[data-user-id='".concat(msgData['sender_id'], "']"));
+        if (!chatItem)
             return;
-        var unread_label = chat_item.querySelector('.chat-item__unread-label');
-        if (unread_label.classList.contains('hidden')) {
-            unread_label.classList.remove('hidden');
-            unread_label.textContent = '1';
+        var unreadLabel = chatItem.querySelector('.chat-item__unread-label');
+        if (unreadLabel.classList.contains('hidden')) {
+            unreadLabel.classList.remove('hidden');
+            unreadLabel.textContent = '1';
         }
         else {
-            unread_label.textContent = (parseInt(unread_label.textContent || '0') + 1).toString();
+            unreadLabel.textContent = (parseInt(unreadLabel.textContent || '0') + 1).toString();
         }
     }
     else {
-        var message_el_1 = insertMessage(msg_data, true, true);
-        message_el_1.classList.add("msg-minimized");
+        console.log('sdaa');
+        var messageEl_1 = insertMessage(msgData, true, true);
+        messageEl_1.classList.add("msg-minimized");
         setTimeout(function () {
-            message_el_1.classList.remove("msg-minimized");
-            message_el_1.classList.add("unread");
+            messageEl_1.classList.remove("msg-minimized");
+            messageEl_1.classList.add("unread");
         }, 1);
-        if (isMessageVisible(message_el_1) && msg_data['sender_id'] == open_chat_companion_id)
-            socket.emit('mark-msgs-as-read', [msg_data['id']]);
+        if (isMessageVisible(messageEl_1) && msgData['sender_id'] == openChatCompanionId)
+            socket.emit('mark-msgs-as-read', [msgData['id']]);
         else {
-            chat_container.scrollTop = 0;
+            chatContainer.scrollTop = 0;
         }
-        msg_input.value = '';
+        msgInput.value = '';
     }
 });
-socket.on('search-result', function (result_users) {
-    populate_with_chat_items(result_users, result_list);
+socket.on('search-result', function (resultUsers) {
+    populateWithChatItems(resultUsers, resultList);
 });
 socket.on('more-chat-messages-response', function (messages) {
     if (messages.length > 0) {
-        var last_divider = document.querySelector('.date-divider:last-of-type');
-        if (last_divider)
-            chat_scrollable.removeChild(last_divider);
+        var lastDivider = document.querySelector('.date-divider:last-of-type');
+        if (lastDivider)
+            chatScrollable.removeChild(lastDivider);
     }
-    populate_chat_with_messages(messages);
-    third_message = chat_container.querySelector('.message:nth-last-of-type(3)');
-    first_message = chat_container.querySelector('.message:last-of-type');
+    populateChatWithMessages(messages);
+    thirdMessage = chatContainer.querySelector('.message:nth-last-of-type(3)');
+    firstMessage = chatContainer.querySelector('.message:last-of-type');
 });
 socket.on('user-online-status-update', function (user) {
-    var chat_item = document.querySelector(".chat-item[data-user-id='".concat(user['id'], "']"));
-    if (chat_item) {
+    var chatItem = document.querySelector(".chat-item[data-user-id='".concat(user['id'], "']"));
+    if (chatItem) {
         if (user['is_online'])
-            chat_item.classList.add('user-online');
+            chatItem.classList.add('user-online');
         else
-            chat_item.classList.remove('user-online');
+            chatItem.classList.remove('user-online');
     }
-    if (open_chat_companion_id == user['id']) {
-        var companion_info = right_panel.querySelector('.companion-info');
+    if (openChatCompanionId == user['id']) {
+        var companionInfo = rightPanel.querySelector('.companion-info');
         console.log('hello');
         if (user['is_online'])
-            companion_info.classList.add('user-online');
+            companionInfo.classList.add('user-online');
         else
-            companion_info.classList.remove('user-online');
+            companionInfo.classList.remove('user-online');
     }
 });
-socket.on('companion-read-msgs', function (read_msgs) {
-    chat_scrollable.querySelectorAll('.my-msg.unread').forEach(function (msg_el) {
-        if (read_msgs.includes(parseInt(msg_el.getAttribute('data-id')))) {
-            msg_el.classList.remove('unread');
+socket.on('companion-read-msgs', function (readMsgs) {
+    chatScrollable.querySelectorAll('.my-msg.unread').forEach(function (msgEl) {
+        if (readMsgs.includes(parseInt(msgEl.getAttribute('data-id')))) {
+            msgEl.classList.remove('unread');
         }
     });
 });
 socket.on('message-deleted', function (message) {
     console.log(message);
-    // if(open_chat_companion_id == message.sender_id)
-    var msg_el = chat_scrollable.querySelector(".message[data-id='".concat(message.id, "']"));
-    if (msg_el) {
-        var prevSibling = msg_el.previousSibling;
-        var nextSibling = msg_el.nextSibling;
+    // if(openChatCompanionId == message.sender_id)
+    var msgEl = chatScrollable.querySelector(".message[data-id= '".concat(message.id, "']"));
+    if (msgEl) {
+        var prevSibling = msgEl.previousSibling;
+        var nextSibling = msgEl.nextSibling;
         if (nextSibling.classList.contains('date-divider')
             && (prevSibling === null || prevSibling === void 0 ? void 0 : prevSibling.classList.contains('date-divider'))) {
-            chat_scrollable.removeChild(nextSibling);
+            chatScrollable.removeChild(nextSibling);
         }
-        chat_scrollable.removeChild(msg_el);
-        var chatLastEl = chat_scrollable.firstChild;
+        chatScrollable.removeChild(msgEl);
+        var chatLastEl = chatScrollable.firstChild;
         if (chatLastEl.classList.contains('date-divider')) {
-            chat_scrollable.removeChild(chatLastEl);
+            chatScrollable.removeChild(chatLastEl);
         }
     }
 });
-function openChat(user_id) {
-    chat_container.scrollTop = 0;
-    socket.emit('chat_data_query', user_id);
+function openChat(userId) {
+    chatContainer.scrollTop = 0;
+    socket.emit('chat_data_query', userId);
 }
-function addChatItem(chat_user, parentEl) {
-    var full_name = chat_user['first_name'] + ' ' + chat_user['last_name'];
-    var user_id = chat_user['id'];
-    var unread_count = chat_user['unread_count'];
+function addChatItem(chatUser, parentEl) {
+    var fullName = chatUser['first_name'] + ' ' + chatUser['last_name'];
+    var userId = chatUser['id'];
+    var unreadCount = chatUser['unread_count'];
     var chatItem = document.createElement("div");
     chatItem.classList.add("chat-item");
-    if (chat_user['is_online'])
+    if (chatUser['is_online'])
         chatItem.classList.add("user-online");
     var profilePhoto = document.createElement("div");
-    profilePhoto.textContent = full_name[0];
+    profilePhoto.textContent = fullName[0];
     profilePhoto.classList.add("chat-item__profile-photo");
     chatItem.appendChild(profilePhoto);
     var chatUsernameWrapper = document.createElement("div");
     chatUsernameWrapper.classList.add("chat-item__username-wrapper");
     var fullname = document.createElement("span");
-    fullname.textContent = full_name;
+    fullname.textContent = fullName;
     chatUsernameWrapper.appendChild(fullname);
     chatItem.appendChild(chatUsernameWrapper);
-    var unread_label = document.createElement("div");
-    unread_label.classList.add("chat-item__unread-label");
-    unread_label.textContent = unread_count;
-    if (unread_count == 0)
-        unread_label.classList.add("hidden");
-    chatItem.appendChild(unread_label);
-    chatItem.setAttribute('data-user-id', user_id);
+    var unreadLabel = document.createElement("div");
+    unreadLabel.classList.add("chat-item__unread-label");
+    unreadLabel.textContent = unreadCount;
+    if (unreadCount == 0)
+        unreadLabel.classList.add("hidden");
+    chatItem.appendChild(unreadLabel);
+    chatItem.setAttribute('data-user-id', userId);
     parentEl.appendChild(chatItem);
 }
-function populate_with_chat_items(chat_users, parentEl) {
-    var chat_items = parentEl.querySelectorAll('.chat-item') || [];
-    chat_items.forEach(function (element) {
+function populateWithChatItems(chatUsers, parentEl) {
+    var chatItems = parentEl.querySelectorAll('.chat-item') || [];
+    chatItems.forEach(function (element) {
         parentEl.removeChild(element);
     });
-    if (chat_users.length != 0) {
-        chat_users.forEach(function (chat_user) {
-            addChatItem(chat_user, parentEl);
+    if (chatUsers.length != 0) {
+        chatUsers.forEach(function (chatUser) {
+            addChatItem(chatUser, parentEl);
         });
     }
     else {
-        var empty_label = parentEl.querySelector('.empty-label');
-        if (empty_label)
-            empty_label.classList.remove('hidden');
+        var emptyLabel = parentEl.querySelector('.empty-label');
+        if (emptyLabel)
+            emptyLabel.classList.remove('hidden');
     }
 }
 function insertDateDivider(date, beforeSibling) {
-    var date_divider = document.createElement('div');
-    date_divider.classList.add('date-divider');
-    var date_span = document.createElement('span');
-    date_span.textContent = date;
-    date_divider.appendChild(date_span);
+    var dateDivider = document.createElement('div');
+    dateDivider.classList.add('date-divider');
+    var dateSpan = document.createElement('span');
+    dateSpan.textContent = date;
+    dateDivider.appendChild(dateSpan);
     if (!beforeSibling)
-        chat_scrollable.appendChild(date_divider);
+        chatScrollable.appendChild(dateDivider);
     else {
         if (beforeSibling)
-            chat_scrollable.insertBefore(date_divider, beforeSibling);
+            chatScrollable.insertBefore(dateDivider, beforeSibling);
     }
 }
-function insertMessage(message, end_of_list, is_new_message) {
+function insertMessage(message, endOfList, isNewMessage) {
     var _a;
-    if (end_of_list === void 0) { end_of_list = false; }
-    if (is_new_message === void 0) { is_new_message = false; }
-    var utc_date = new Date(message['timestamp']);
-    var three_hours_in_ms = 10800000;
-    var msg_date = new Date(utc_date.getTime() + three_hours_in_ms); //to Ukrainian time
-    var sent_at = "".concat(msg_date.getDate(), " ").concat(month_names[msg_date.getMonth()], " ").concat(msg_date.getFullYear());
-    var hours = (msg_date.getHours() >= 10) ? msg_date.getHours() : '0' + msg_date.getHours();
-    var mins = (msg_date.getMinutes() > 10) ? msg_date.getMinutes() : '0' + msg_date.getMinutes();
-    var sent_time = "".concat(hours, ":").concat(mins);
-    if (!last_msg_sent_at[open_chat_companion_id.toString()])
-        last_msg_sent_at[open_chat_companion_id.toString()] = sent_at;
-    var message_el = document.createElement("span");
-    message_el.classList.add("message");
-    if (message['sender_id'] != open_chat_companion_id) {
-        message_el.classList.add("my-msg");
+    if (endOfList === void 0) { endOfList = false; }
+    if (isNewMessage === void 0) { isNewMessage = false; }
+    var utcDate = new Date(message['timestamp']);
+    var threeHoursInMs = 10800000;
+    var msgDate = new Date(utcDate.getTime() + threeHoursInMs); //to Ukrainian time
+    var sentAt = "".concat(msgDate.getDate(), " ").concat(monthNames[msgDate.getMonth()], " ").concat(msgDate.getFullYear());
+    var hours = (msgDate.getHours() >= 10) ? msgDate.getHours() : '0' + msgDate.getHours();
+    var mins = (msgDate.getMinutes() > 10) ? msgDate.getMinutes() : '0' + msgDate.getMinutes();
+    var sentTime = "".concat(hours, ":").concat(mins);
+    if (!lastMsgSentAt[openChatCompanionId.toString()])
+        lastMsgSentAt[openChatCompanionId.toString()] = sentAt;
+    var messageEl = document.createElement("span");
+    messageEl.classList.add("message");
+    if (message['sender_id'] != openChatCompanionId) {
+        messageEl.classList.add("my-msg");
     }
-    message_el.addEventListener('contextmenu', function (e) {
+    messageEl.addEventListener('contextmenu', function (e) {
         var options = [];
         options.push({
             label: 'Копіювати текст',
@@ -263,7 +263,7 @@ function insertMessage(message, end_of_list, is_new_message) {
                 navigator.clipboard.writeText(message['text']);
             }
         });
-        if (message['sender_id'] != open_chat_companion_id) {
+        if (message['sender_id'] != openChatCompanionId) {
             options.push({
                 label: 'Видалити',
                 action: function () {
@@ -272,117 +272,117 @@ function insertMessage(message, end_of_list, is_new_message) {
                 }
             });
         }
-        var menu = new ContextMenu(options, chat_container);
+        var menu = new ContextMenu(options, chatContainer);
         menu.show(e);
     });
-    message_el.setAttribute('data-id', message['id']);
-    var message_content_el = document.createElement('span');
-    message_content_el.textContent = message['text'];
-    message_el.appendChild(message_content_el);
-    var message_meta_wrapper = document.createElement('div');
-    message_meta_wrapper.classList.add('msg-meta');
-    var time_el = document.createElement('span');
-    time_el.classList.add('sent-at-time');
-    time_el.textContent = sent_time;
-    message_meta_wrapper.appendChild(time_el);
-    var delivery_status_1 = document.createElement('img');
-    var delivery_status_2 = document.createElement('img');
-    delivery_status_1.setAttribute('src', '/static/img/check-mark.svg');
-    delivery_status_2.setAttribute('src', '/static/img/check-mark.svg');
-    delivery_status_1.classList.add('delivery-status');
-    delivery_status_2.classList.add('delivery-status-succeeded');
-    // delivery_status_2.classList.add('hidden');
-    message_meta_wrapper.appendChild(delivery_status_1);
-    message_meta_wrapper.appendChild(delivery_status_2);
-    message_el.appendChild(message_meta_wrapper);
+    messageEl.setAttribute('data-id', message['id']);
+    var messageContentEl = document.createElement('span');
+    messageContentEl.textContent = message['text'];
+    messageEl.appendChild(messageContentEl);
+    var messageMetaWrapper = document.createElement('div');
+    messageMetaWrapper.classList.add('msg-meta');
+    var timeEl = document.createElement('span');
+    timeEl.classList.add('sent-at-time');
+    timeEl.textContent = sentTime;
+    messageMetaWrapper.appendChild(timeEl);
+    var deliveryStatus1 = document.createElement('img');
+    var deliveryStatus2 = document.createElement('img');
+    deliveryStatus1.setAttribute('src', '/static/img/check-mark.svg');
+    deliveryStatus2.setAttribute('src', '/static/img/check-mark.svg');
+    deliveryStatus1.classList.add('delivery-status');
+    deliveryStatus2.classList.add('delivery-status-succeeded');
+    // deliveryStatus2.classList.add('hidden');
+    messageMetaWrapper.appendChild(deliveryStatus1);
+    messageMetaWrapper.appendChild(deliveryStatus2);
+    messageEl.appendChild(messageMetaWrapper);
     if (!message['read_by_recipient'])
-        message_el.classList.add('unread');
-    if (sent_at != last_msg_sent_at[open_chat_companion_id.toString()] && !is_new_message /*&& chat_scrollable.hasChildNodes()*/) {
-        insertDateDivider(last_msg_sent_at[open_chat_companion_id.toString()]);
-        last_msg_sent_at[open_chat_companion_id.toString()] = sent_at;
+        messageEl.classList.add('unread');
+    if (sentAt != lastMsgSentAt[openChatCompanionId.toString()] && !isNewMessage /*&& chatScrollable.hasChildNodes()*/) {
+        insertDateDivider(lastMsgSentAt[openChatCompanionId.toString()]);
+        lastMsgSentAt[openChatCompanionId.toString()] = sentAt;
     }
-    if (!end_of_list)
-        chat_scrollable.appendChild(message_el);
+    if (!endOfList)
+        chatScrollable.appendChild(messageEl);
     else
-        chat_scrollable.insertBefore(message_el, chat_scrollable.firstChild);
-    if (is_new_message) {
-        var last_date_divider_date = (_a = chat_scrollable.querySelector('.date-divider > span')) === null || _a === void 0 ? void 0 : _a.textContent;
-        console.log('hello:', last_date_divider_date);
-        if (sent_at != last_date_divider_date) {
-            insertDateDivider(sent_at, message_el.nextSibling);
+        chatScrollable.insertBefore(messageEl, chatScrollable.firstChild);
+    if (isNewMessage) {
+        var lastDateDividerDate = (_a = chatScrollable.querySelector('.date-divider > span')) === null || _a === void 0 ? void 0 : _a.textContent;
+        console.log('hello:', lastDateDividerDate);
+        if (sentAt != lastDateDividerDate) {
+            insertDateDivider(sentAt, messageEl.nextSibling);
         }
     }
-    return message_el;
+    return messageEl;
 }
-function populate_chat_with_messages(messages) {
+function populateChatWithMessages(messages) {
     var _a;
     if (messages.length == 0) {
-        (_a = chat_container.querySelector('.message:last-of-type')) === null || _a === void 0 ? void 0 : _a.setAttribute('data-the-first-msg', 'true');
+        (_a = chatContainer.querySelector('.message:last-of-type')) === null || _a === void 0 ? void 0 : _a.setAttribute('data-the-first-msg', 'true');
         return;
     }
     messages.forEach(function (message) {
         insertMessage(message);
     });
-    insertDateDivider(last_msg_sent_at[open_chat_companion_id.toString()]);
-    first_message = chat_container.querySelector('.message:last-of-type');
-    third_message = chat_container.querySelector('.message:nth-last-of-type(3)');
+    insertDateDivider(lastMsgSentAt[openChatCompanionId.toString()]);
+    firstMessage = chatContainer.querySelector('.message:last-of-type');
+    thirdMessage = chatContainer.querySelector('.message:nth-last-of-type(3)');
 }
 function openUserInfoWindow(user) {
-    var full_screen_container = document.querySelector('.full-screen-container');
-    var info_wrapper = document.querySelector('.user-info_wrapper');
-    var profile_photo = full_screen_container === null || full_screen_container === void 0 ? void 0 : full_screen_container.querySelector('.user-info__profile-photo');
-    var full_name = full_screen_container === null || full_screen_container === void 0 ? void 0 : full_screen_container.querySelector('.full-name');
-    var username = full_screen_container === null || full_screen_container === void 0 ? void 0 : full_screen_container.querySelector('.username');
-    full_name.textContent = "".concat(user['first_name'], " ").concat(user['last_name']);
+    var fullScreenContainer = document.querySelector('.full-screen-container');
+    var infoWrapper = document.querySelector('.user-info_wrapper');
+    var profilePhoto = fullScreenContainer === null || fullScreenContainer === void 0 ? void 0 : fullScreenContainer.querySelector('.user-info__profile-photo');
+    var fullName = fullScreenContainer === null || fullScreenContainer === void 0 ? void 0 : fullScreenContainer.querySelector('.full-name');
+    var username = fullScreenContainer === null || fullScreenContainer === void 0 ? void 0 : fullScreenContainer.querySelector('.username');
+    fullName.textContent = "".concat(user['first_name'], " ").concat(user['last_name']);
     username.textContent = '@' + user['username'];
-    full_screen_container === null || full_screen_container === void 0 ? void 0 : full_screen_container.classList.remove('hidden');
+    fullScreenContainer === null || fullScreenContainer === void 0 ? void 0 : fullScreenContainer.classList.remove('hidden');
     setTimeout(function () {
-        info_wrapper === null || info_wrapper === void 0 ? void 0 : info_wrapper.classList.remove('minimized');
+        infoWrapper === null || infoWrapper === void 0 ? void 0 : infoWrapper.classList.remove('minimized');
     }, 1);
-    var send_msg_btn = full_screen_container.querySelector('.user-info_send-msg-btn');
-    send_msg_btn.onclick = function () {
+    var sendMsgBtn = fullScreenContainer.querySelector('.user-info_send-msg-btn');
+    sendMsgBtn.onclick = function () {
         console.log('helo');
-        full_screen_container.classList.add('hidden');
+        fullScreenContainer.classList.add('hidden');
         openChat(user['id']);
     };
-    full_screen_container.addEventListener('click', function (event) {
-        if (event.target !== full_screen_container)
+    fullScreenContainer.addEventListener('click', function (event) {
+        if (event.target !== fullScreenContainer)
             return;
-        full_screen_container.classList.add('hidden');
-        info_wrapper === null || info_wrapper === void 0 ? void 0 : info_wrapper.classList.add('minimized');
+        fullScreenContainer.classList.add('hidden');
+        infoWrapper === null || infoWrapper === void 0 ? void 0 : infoWrapper.classList.add('minimized');
     });
 }
 document.querySelector('#new-message_send-button').addEventListener('click', function () {
-    if (msg_input.value.length > 0) {
-        socket.emit('send_message', { 'to_user_id': open_chat_companion_id, 'text': msg_input.value });
-        var unread_label = document.querySelector('.unread-msgs-section');
-        if (unread_label)
-            chat_scrollable.removeChild(unread_label);
+    if (msgInput.value.length > 0) {
+        socket.emit('send_message', { 'to_user_id': openChatCompanionId, 'text': msgInput.value });
+        var unreadLabel = document.querySelector('.unread-msgs-section');
+        if (unreadLabel)
+            chatScrollable.removeChild(unreadLabel);
     }
     else {
-        msg_input.classList.add('unfilled');
+        msgInput.classList.add('unfilled');
         setTimeout(function () {
-            msg_input.classList.remove('unfilled');
+            msgInput.classList.remove('unfilled');
         }, 150);
     }
 });
-msg_input.addEventListener("keyup", function (event) {
+msgInput.addEventListener("keyup", function (event) {
     if (event.key === 'Enter') {
         event.preventDefault();
         document.querySelector('#new-message_send-button').click();
     }
 });
-search_input.addEventListener('input', function () {
-    if (search_input.value.length == 0) {
-        chat_list.classList.remove('hidden');
-        result_list.classList.add('hidden');
+searchInput.addEventListener('input', function () {
+    if (searchInput.value.length == 0) {
+        chatList.classList.remove('hidden');
+        resultList.classList.add('hidden');
         return;
     }
-    chat_list.classList.add('hidden');
-    result_list.classList.remove('hidden');
-    socket.emit('search-event', search_input.value);
+    chatList.classList.add('hidden');
+    resultList.classList.remove('hidden');
+    socket.emit('search-event', searchInput.value);
 });
-chat_list.addEventListener('click', function (event) {
+chatList.addEventListener('click', function (event) {
     var _a, _b, _c, _d, _e, _f;
     var target = event.target;
     if (target.classList.contains('chat-item')) {
@@ -395,66 +395,66 @@ chat_list.addEventListener('click', function (event) {
         openChat(parseInt((_f = (_e = target.parentElement) === null || _e === void 0 ? void 0 : _e.parentElement) === null || _f === void 0 ? void 0 : _f.getAttribute('data-user-id')));
     }
 });
-var load_more_msgs_query_sent = false;
-chat_container.addEventListener('scroll', function () {
-    if (!load_more_msgs_query_sent) {
-        if (isMessageVisible(third_message)) {
-            if (first_message.getAttribute('data-the-first-msg'))
+var loadMoreMsgsQuerySent = false;
+chatContainer.addEventListener('scroll', function () {
+    if (!loadMoreMsgsQuerySent) {
+        if (isMessageVisible(thirdMessage)) {
+            if (firstMessage.getAttribute('data-the-first-msg'))
                 return;
-            var first_message_id = first_message.getAttribute('data-id');
-            socket.emit('load-more-messages', { 'companion-id': open_chat_companion_id, 'start-message-id': first_message_id });
-            load_more_msgs_query_sent = true;
+            var firstMessageId = firstMessage.getAttribute('data-id');
+            socket.emit('load-more-messages', { 'companion-id': openChatCompanionId, 'start-message-id': firstMessageId });
+            loadMoreMsgsQuerySent = true;
             setTimeout(function () {
-                load_more_msgs_query_sent = false;
+                loadMoreMsgsQuerySent = false;
             }, 1000);
         }
         ;
     }
     ;
-    if (chat_container.scrollTop >= -100 && !to_last_msg_btn.classList.contains('hidden')) {
-        to_last_msg_btn.classList.add('minimized');
+    if (chatContainer.scrollTop >= -100 && !toLastMsgBtn.classList.contains('hidden')) {
+        toLastMsgBtn.classList.add('minimized');
         setTimeout(function () {
-            to_last_msg_btn.classList.add('hidden');
+            toLastMsgBtn.classList.add('hidden');
         }, 100);
     }
-    else if (to_last_msg_btn.classList.contains('hidden')) {
-        to_last_msg_btn.classList.remove('hidden');
+    else if (chatContainer.scrollTop < -100 && toLastMsgBtn.classList.contains('hidden')) {
+        toLastMsgBtn.classList.remove('hidden');
         setTimeout(function () {
-            to_last_msg_btn.classList.remove('minimized');
+            toLastMsgBtn.classList.remove('minimized');
         }, 1);
     }
 });
-to_last_msg_btn.addEventListener('click', function () {
-    chat_container.scrollTop = 0;
-    // to_last_msg_btn.classList.add('hidden');
+toLastMsgBtn.addEventListener('click', function () {
+    chatContainer.scrollTop = 0;
+    // toLastMsgBtn.classList.add('hidden');
 });
-(_a = right_panel.querySelector('.chat-exit-btn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () {
+(_a = rightPanel.querySelector('.chat-exit-btn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', function () {
     var _a;
-    open_chat_companion_id = 0;
+    openChatCompanionId = 0;
     (_a = document.querySelector('.left-panel')) === null || _a === void 0 ? void 0 : _a.classList.remove('hidden');
 });
-var observer_config = { childList: true };
+var observerConfig = { childList: true };
 // Callback function to execute when mutations are observed
 var chatListChangeCallback = function (mutationsList, observer) {
     for (var _i = 0, mutationsList_1 = mutationsList; _i < mutationsList_1.length; _i++) {
         var mutation = mutationsList_1[_i];
-        var empty_label = mutation.target.querySelector('.empty-label');
+        var emptyLabel = mutation.target.querySelector('.empty-label');
         if (mutation.target.hasChildNodes())
-            empty_label.classList.add('hidden');
+            emptyLabel.classList.add('hidden');
         else
-            empty_label.classList.remove('hidden');
+            emptyLabel.classList.remove('hidden');
     }
 };
-var chat_list_change_observer = new MutationObserver(chatListChangeCallback);
-chat_list_change_observer.observe(chat_list, observer_config);
-chat_list_change_observer.observe(result_list, observer_config);
-var last_message = chat_container.querySelector('.message');
+var chatListChangeObserver = new MutationObserver(chatListChangeCallback);
+chatListChangeObserver.observe(chatList, observerConfig);
+chatListChangeObserver.observe(resultList, observerConfig);
+var lastMessage = chatContainer.querySelector('.message');
 var chatChangeCallback = function (mutationsList, observer) {
-    last_message = chat_container.querySelector('.message');
+    lastMessage = chatContainer.querySelector('.message');
 };
-var chat_change_observer = new MutationObserver(chatChangeCallback);
-chat_change_observer.observe(chat_scrollable, observer_config);
+var chatChangeObserver = new MutationObserver(chatChangeCallback);
+chatChangeObserver.observe(chatScrollable, observerConfig);
 window.onload = function () {
-    search_input.value = '';
+    searchInput.value = '';
 };
 //# sourceMappingURL=main.js.map
