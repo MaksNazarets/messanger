@@ -6,3 +6,4 @@ table-creation-queries.sql
 /data(for_pythonanywhere)
 /node_modules
 /migrations
+/user_data

@@ -6,6 +6,7 @@ from email_validator import validate_email, EmailNotValidError
 from models import User
 from werkzeug.security import generate_password_hash, check_password_hash
 import re
+import os
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -89,9 +90,15 @@ def create_account():
                 return jsonify(errors=errors), 200
 
             hashed_password = generate_password_hash(password, method='sha256')
-            db.session.add(User(first_name, last_name,
-                           username, email, hashed_password))
+            new_user = User(first_name, last_name,
+                           username, email, hashed_password)
+            db.session.add(new_user)
             db.session.commit()
+
+            path = os.path.join(app.root_path, f"user_data/profile_photos/user_{new_user.id}")
+            if not os.path.exists(path):
+                os.makedirs(path)
+                
             return jsonify(message='Account created successfully.'), 200
 
     except Exception as e:

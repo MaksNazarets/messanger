@@ -58,6 +58,8 @@ export class ContextMenu {
             this.backdrop = document.createElement('div');
             this.backdrop.className = 'backdrop';
             this.backdropParent.appendChild(this.backdrop);
+
+            this.backdrop.addEventListener('contextmenu', (e) => e.preventDefault())
         }
 
         ContextMenu.currentMenu = this.menu;

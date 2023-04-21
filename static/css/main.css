@@ -53,6 +53,8 @@ main {
     max-height: 100%;
     height: 100%;
     width: 100%;
+    margin: 0.2em 0;
+    border-radius: 5px;
     overflow-y: auto;
     /* scroll-behavior: smooth; */
 }
@@ -60,7 +62,6 @@ main {
 .chat-list,
 .result-list {
     position: relative;
-    padding: 10px 0;
     display: flex;
     flex-direction: column;
     min-height: 100%;
@@ -91,7 +92,9 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #3d009f;
+    /* background: #3d009f; */
+    background-size: cover;
+    background-position: center;
     border-radius: 50%;
 }
 
@@ -170,16 +173,10 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    /* background: url('../img/chat-bg.jpg');
-    background-size: cover;
-    background-position: center; */
     background: rgb(41, 41, 41);
     background: linear-gradient(153deg, rgba(41, 41, 41, 1) 0%, rgba(22, 22, 22, 1) 50%, rgba(41, 41, 41, 1) 100%);
 }
 
-/* .right-panel > *{ */
-/* backdrop-filter: blur(30px); */
-/* } */
 
 .chat-name_wrapper {
     position: relative;
@@ -219,8 +216,9 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: #3d009f;
     border-radius: 50%;
+    background-size: cover;
+    background-position: center;
 }
 
 .chat-name__profile-photo::after {
@@ -249,9 +247,7 @@ main {
     display: flex;
     padding: 10px;
     align-items: center;
-    gap: 10px;
-
-    /* testing */
+    gap: .3em;
     max-width: 800px;
 }
 
@@ -274,6 +270,9 @@ main {
 }
 
 #new-message_send-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     border-radius: 15px;
     padding: 10px;
     color: #fff;
@@ -288,6 +287,12 @@ main {
 
 #new-message_send-button:active {
     background: #210056;
+}
+
+#new-message_send-button svg{
+    fill: #fff;
+    height: 1em;
+    width: fit-content;
 }
 
 .chat-container {
@@ -533,7 +538,8 @@ main {
 .user-info__profile-photo {
     height: 20em;
     /* background-image: url('/static/img/avatar_512x512.png'); */
-    background-image: url('/static/img/Zugpsitze_mountain.jpg');
+    /* background-image: url('/static/img/Zugpsitze_mountain.jpg'); */
+    /* background-image: url('\user_data\profile_photos\default\Zugpsitze_mountain.jpg'); */
     background-position: center;
     background-size: cover;
 }
@@ -587,7 +593,8 @@ main {
 
 .context-menu{
     position: fixed;
-    background: #000;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
     border-radius: 15px;
     overflow: hidden;
     z-index: 70;

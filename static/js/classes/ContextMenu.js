@@ -54,6 +54,7 @@ export var ContextMenu = /** @class */ (function () {
             this.backdrop = document.createElement('div');
             this.backdrop.className = 'backdrop';
             this.backdropParent.appendChild(this.backdrop);
+            this.backdrop.addEventListener('contextmenu', function (e) { return e.preventDefault(); });
         }
         ContextMenu.currentMenu = this.menu;
         // Attach an event listener to hide the current context menu when the user clicks outside of it

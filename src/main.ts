@@ -47,7 +47,7 @@ socket.on('get_chat_data', (chatData: AnyObject) => {
     openChatCompanionId = chatData['companion']['id'];
     openChatCompanion = chatData['companion'];
 
-    // console.log(chatData);
+    console.log(chatData);
 
     rightPanel.classList.remove('hidden');
 
@@ -62,7 +62,9 @@ socket.on('get_chat_data', (chatData: AnyObject) => {
     })
 
     // setting companion data
-    rightPanel.querySelector('.chat-name__profile-photo')!.textContent = chatData['companion']['first_name'][0];
+    const profile_photo = rightPanel.querySelector('.chat-name__profile-photo') as HTMLElement;
+    profile_photo.textContent = '';
+    profile_photo.style.backgroundImage = `url('/${chatData.companion.id}/profile_photo')`;
 
     let companion = openChatCompanion;
     rightPanel.querySelector('.chat-name__username')!.textContent = `${companion['first_name']} ${companion['last_name']}`;
@@ -231,7 +233,7 @@ function addChatItem(chatUser: AnyObject, parentEl: HTMLElement) {
     if (chatUser['is_online']) chatItem.classList.add("user-online");
 
     let profilePhoto = document.createElement("div");
-    profilePhoto.textContent = fullName[0];
+    profilePhoto.style.backgroundImage = `url('/${chatUser.id}/profile_photo')`;
     profilePhoto.classList.add("chat-item__profile-photo");
     chatItem.appendChild(profilePhoto);
 
@@ -247,14 +249,16 @@ function addChatItem(chatUser: AnyObject, parentEl: HTMLElement) {
     unreadLabel.classList.add("chat-item__unread-label");
     unreadLabel.textContent = unreadCount;
 
-    if (unreadCount == 0)
-        unreadLabel.classList.add("hidden");
-
     chatItem.appendChild(unreadLabel);
-
     chatItem.setAttribute('data-user-id', userId);
 
-    parentEl.appendChild(chatItem);
+    if (unreadCount == 0){
+        unreadLabel.classList.add("hidden");
+        parentEl.appendChild(chatItem);
+    }
+    else{
+        parentEl.prepend(chatItem);
+    }
 }
 
 
@@ -332,7 +336,7 @@ function insertMessage(message: AnyObject, endOfList = false, isNewMessage = fal
             });
         }
 
-        const menu = new ContextMenu(options, chatContainer);
+        const menu = new ContextMenu(options, rightPanel);
         menu.show(e);
     })
 
@@ -402,9 +406,11 @@ function populateChatWithMessages(messages: []) {
 function openUserInfoWindow(user: AnyObject) {
     const fullScreenContainer = document.querySelector('.full-screen-container') as HTMLElement;
     const infoWrapper = document.querySelector('.user-info_wrapper');
-    const profilePhoto = fullScreenContainer?.querySelector('.user-info__profile-photo');
+    const profilePhoto = fullScreenContainer?.querySelector('.user-info__profile-photo') as HTMLImageElement;
     const fullName = fullScreenContainer?.querySelector('.full-name') as HTMLSpanElement;
     const username = fullScreenContainer?.querySelector('.username') as HTMLSpanElement;
+
+    profilePhoto.style.backgroundImage = `url('/${user.id}/profile_photo')`;
 
     fullName.textContent = `${user['first_name']} ${user['last_name']}`;
     username.textContent = '@' + user['username'];
@@ -466,7 +472,8 @@ searchInput.addEventListener('input', () => {
     socket.emit('search-event', searchInput.value);
 })
 
-chatList.addEventListener('click', (event: MouseEvent) => {
+const chatItemClickHandler = (event: MouseEvent) => {
+    console.log('sent')
     const target = event.target as HTMLDivElement;
     if (target.classList.contains('chat-item')) {
         openChat(parseInt(target.getAttribute('data-user-id')!));
@@ -477,7 +484,10 @@ chatList.addEventListener('click', (event: MouseEvent) => {
     else if (target.parentElement?.parentElement?.classList.contains('chat-item')) {
         openChat(parseInt(target.parentElement?.parentElement?.getAttribute('data-user-id')!));
     }
-});
+}
+
+chatList.addEventListener('click', chatItemClickHandler);
+resultList.addEventListener('click', chatItemClickHandler);
 
 let loadMoreMsgsQuerySent = false;
 chatContainer.addEventListener('scroll', () => {
@@ -508,6 +518,7 @@ chatContainer.addEventListener('scroll', () => {
         }, 1);
     }
 })
+
 toLastMsgBtn.addEventListener('click', () => {
     chatContainer.scrollTop = 0;
     // toLastMsgBtn.classList.add('hidden');

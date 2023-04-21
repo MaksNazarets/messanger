@@ -1,5 +1,8 @@
+from socket_server import *
+from views import *
 from main import app, socketio, login_manager
 from auth import *
+from query_handling import *
 from models import User, Attachment, Chat, Message, Notification
 
 with app.app_context():
@@ -7,9 +10,6 @@ with app.app_context():
 
 login_manager.init_app(app)
 
-from views import *
-
-from socket_server import *
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)

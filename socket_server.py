@@ -47,7 +47,6 @@ def user_connected():
             User.id == current_user.id)).scalar()
 
         user.session_id = request.sid
-        print(str(user) + ' - ' + user.session_id)
         db.session.commit()
 
     chat_users_dict = get_chat_list(current_user.id)
@@ -78,10 +77,10 @@ def on_disconnect():
 
 @socketio.on('chat_data_query')
 def send_chat_data(user_id):
+    companion = db.session.query(User).filter(User.id == user_id).scalar()
+
     chat: Chat = db.session.execute(db.select(Chat).filter((Chat.user1_id == user_id) | (Chat.user2_id == user_id)).filter(
         (Chat.user1_id == current_user.id) | (Chat.user2_id == current_user.id))).scalar()
-
-    companion = db.session.query(User).filter(User.id == user_id).scalar()
 
     if chat is None:
         json_msgs = []

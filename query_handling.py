@@ -1,26 +1,18 @@
-from main import app, db, current_user, login_required
-from models import User, Chat
-# from flask_login import login_required
-from flask import jsonify
+from main import app
+import os
+import fnmatch
+from flask import send_file
 
-@app.route('/getchatlist', methods=['POST'])
-@login_required
-def getchatlist():
-    user: User = current_user
-    
-    with app.app_context():
-        chats: list[Chat] = db.session.execute(db.select(Chat).filter((Chat.user1==user) | (Chat.user2==user))).scalars().all()
-        # dict_chats = [i.to_dict() for i in chats]
+@app.route('/<user_id>/profile_photo')
+def get_profile_photo(user_id):
+    path_to_folder = os.path.join(app.root_path, f"user_data/profile_photos/user_{user_id}")
+    for file in os.listdir(path_to_folder):
+        # Check if the filename matches the pattern
+        if fnmatch.fnmatch(file, '1.*'):
+            print(file)
 
-        chat_users = []
-        for chat in chats:
-            chat_user = chat.user1 if chat.user2_id == user.id else chat.user2
-            user_data = {'full_name': f'{chat_user.first_name} {chat_user.last_name}',
-                         'chat_id': chat.id}
-            chat_users.append(user_data)
+            filename = f'{path_to_folder}/{file}'
+            return send_file(filename, mimetype='image/png')
 
-        # print(dict_chats)
-        print(chat_users)
-
-        return jsonify(chat_users), 200
+    return send_file(os.path.join(app.root_path, f"user_data/profile_photos/default/light-2.png"), mimetype='image/png')
     

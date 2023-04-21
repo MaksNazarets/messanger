@@ -36,7 +36,7 @@ socket.on('get_chat_data', function (chatData) {
         lastMsgSentAt[openChatCompanionId.toString()] = null;
     openChatCompanionId = chatData['companion']['id'];
     openChatCompanion = chatData['companion'];
-    // console.log(chatData);
+    console.log(chatData);
     rightPanel.classList.remove('hidden');
     // setting user online status
     var companionInfo = rightPanel.querySelector('.companion-info');
@@ -48,7 +48,9 @@ socket.on('get_chat_data', function (chatData) {
         openUserInfoWindow(companion);
     });
     // setting companion data
-    rightPanel.querySelector('.chat-name__profile-photo').textContent = chatData['companion']['first_name'][0];
+    var profile_photo = rightPanel.querySelector('.chat-name__profile-photo');
+    profile_photo.textContent = '';
+    profile_photo.style.backgroundImage = "url('/".concat(chatData.companion.id, "/profile_photo')");
     var companion = openChatCompanion;
     rightPanel.querySelector('.chat-name__username').textContent = "".concat(companion['first_name'], " ").concat(companion['last_name']);
     // populating chat with messages
@@ -190,7 +192,7 @@ function addChatItem(chatUser, parentEl) {
     if (chatUser['is_online'])
         chatItem.classList.add("user-online");
     var profilePhoto = document.createElement("div");
-    profilePhoto.textContent = fullName[0];
+    profilePhoto.style.backgroundImage = "url('/".concat(chatUser.id, "/profile_photo')");
     profilePhoto.classList.add("chat-item__profile-photo");
     chatItem.appendChild(profilePhoto);
     var chatUsernameWrapper = document.createElement("div");
@@ -202,11 +204,15 @@ function addChatItem(chatUser, parentEl) {
     var unreadLabel = document.createElement("div");
     unreadLabel.classList.add("chat-item__unread-label");
     unreadLabel.textContent = unreadCount;
-    if (unreadCount == 0)
-        unreadLabel.classList.add("hidden");
     chatItem.appendChild(unreadLabel);
     chatItem.setAttribute('data-user-id', userId);
-    parentEl.appendChild(chatItem);
+    if (unreadCount == 0) {
+        unreadLabel.classList.add("hidden");
+        parentEl.appendChild(chatItem);
+    }
+    else {
+        parentEl.prepend(chatItem);
+    }
 }
 function populateWithChatItems(chatUsers, parentEl) {
     var chatItems = parentEl.querySelectorAll('.chat-item') || [];
@@ -272,7 +278,7 @@ function insertMessage(message, endOfList, isNewMessage) {
                 }
             });
         }
-        var menu = new ContextMenu(options, chatContainer);
+        var menu = new ContextMenu(options, rightPanel);
         menu.show(e);
     });
     messageEl.setAttribute('data-id', message['id']);
@@ -333,6 +339,7 @@ function openUserInfoWindow(user) {
     var profilePhoto = fullScreenContainer === null || fullScreenContainer === void 0 ? void 0 : fullScreenContainer.querySelector('.user-info__profile-photo');
     var fullName = fullScreenContainer === null || fullScreenContainer === void 0 ? void 0 : fullScreenContainer.querySelector('.full-name');
     var username = fullScreenContainer === null || fullScreenContainer === void 0 ? void 0 : fullScreenContainer.querySelector('.username');
+    profilePhoto.style.backgroundImage = "url('/".concat(user.id, "/profile_photo')");
     fullName.textContent = "".concat(user['first_name'], " ").concat(user['last_name']);
     username.textContent = '@' + user['username'];
     fullScreenContainer === null || fullScreenContainer === void 0 ? void 0 : fullScreenContainer.classList.remove('hidden');
@@ -382,8 +389,9 @@ searchInput.addEventListener('input', function () {
     resultList.classList.remove('hidden');
     socket.emit('search-event', searchInput.value);
 });
-chatList.addEventListener('click', function (event) {
+var chatItemClickHandler = function (event) {
     var _a, _b, _c, _d, _e, _f;
+    console.log('sent');
     var target = event.target;
     if (target.classList.contains('chat-item')) {
         openChat(parseInt(target.getAttribute('data-user-id')));
@@ -394,7 +402,9 @@ chatList.addEventListener('click', function (event) {
     else if ((_d = (_c = target.parentElement) === null || _c === void 0 ? void 0 : _c.parentElement) === null || _d === void 0 ? void 0 : _d.classList.contains('chat-item')) {
         openChat(parseInt((_f = (_e = target.parentElement) === null || _e === void 0 ? void 0 : _e.parentElement) === null || _f === void 0 ? void 0 : _f.getAttribute('data-user-id')));
     }
-});
+};
+chatList.addEventListener('click', chatItemClickHandler);
+resultList.addEventListener('click', chatItemClickHandler);
 var loadMoreMsgsQuerySent = false;
 chatContainer.addEventListener('scroll', function () {
     if (!loadMoreMsgsQuerySent) {
