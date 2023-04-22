@@ -10,6 +10,7 @@ var resultList = document.querySelector('.result-list');
 var chatContainer = document.querySelector('.chat-container');
 var chatScrollable = document.querySelector('.chat-scrollable');
 var rightPanel = document.querySelector('.right-panel');
+var leftPanel = document.querySelector('.left-panel');
 var toLastMsgBtn = document.querySelector('.to-last-msg-btn');
 var lastMsgSentAt = {};
 var monthNames = ['січня', "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
@@ -161,7 +162,7 @@ socket.on('companion-read-msgs', function (readMsgs) {
         }
     });
 });
-socket.on('message-deleted', function (message) {
+socket.on('message-removed', function (message) {
     console.log(message);
     // if(openChatCompanionId == message.sender_id)
     var msgEl = chatScrollable.querySelector(".message[data-id= '".concat(message.id, "']"));
@@ -177,6 +178,19 @@ socket.on('message-deleted', function (message) {
         if (chatLastEl.classList.contains('date-divider')) {
             chatScrollable.removeChild(chatLastEl);
         }
+    }
+});
+socket.on('chat-removed', function (userId) {
+    console.log('removed chat id:', userId);
+    var chatItemEl = chatList.querySelector(".chat-item[data-user-id='".concat(userId, "']"));
+    if (chatItemEl) {
+        chatList.removeChild(chatItemEl);
+        if (userId == openChatCompanionId) {
+            openChatCompanionId = 0;
+            chatScrollable.innerHTML = '';
+            rightPanel.classList.add('hidden');
+        }
+        alert('Чат було видалено');
     }
 });
 function openChat(userId) {
@@ -212,6 +226,22 @@ function addChatItem(chatUser, parentEl) {
     }
     else {
         parentEl.prepend(chatItem);
+    }
+    if (parentEl.classList.contains('chat-list')) {
+        chatItem.addEventListener('contextmenu', function (event) {
+            var options = [];
+            options.push({
+                label: 'Видалити чат',
+                action: function () {
+                    if (confirm("\u0412\u0438 \u0432\u043F\u0435\u0432\u043D\u0435\u043D\u0456, \u0449\u043E \u0445\u043E\u0447\u0435\u0442\u0435 \u0432\u0438\u0434\u0430\u043B\u0438\u0442\u0438 \u0447\u0430\u0442 \u0456\u0437 \u043A\u043E\u0440\u0438\u0441\u0442\u0443\u0432\u0430\u0447\u0435\u043C ".concat(chatUser['first_name'], " ").concat(chatUser['last_name'], "?"))) {
+                        socket.emit('remove-chat', chatUser['id']);
+                        console.log('delete chat request: ', chatUser['id']);
+                    }
+                }
+            });
+            var menu = new ContextMenu(options, leftPanel);
+            menu.show(event);
+        });
     }
 }
 function populateWithChatItems(chatUsers, parentEl) {
@@ -261,7 +291,7 @@ function insertMessage(message, endOfList, isNewMessage) {
     if (message['sender_id'] != openChatCompanionId) {
         messageEl.classList.add("my-msg");
     }
-    messageEl.addEventListener('contextmenu', function (e) {
+    messageEl.addEventListener('contextmenu', function (event) {
         var options = [];
         options.push({
             label: 'Копіювати текст',
@@ -279,7 +309,7 @@ function insertMessage(message, endOfList, isNewMessage) {
             });
         }
         var menu = new ContextMenu(options, rightPanel);
-        menu.show(e);
+        menu.show(event);
     });
     messageEl.setAttribute('data-id', message['id']);
     var messageContentEl = document.createElement('span');

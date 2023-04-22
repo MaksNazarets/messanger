@@ -16,6 +16,7 @@ const resultList = document.querySelector('.result-list') as HTMLDivElement;
 const chatContainer = document.querySelector('.chat-container') as HTMLDivElement;
 const chatScrollable = document.querySelector('.chat-scrollable') as HTMLDivElement;
 const rightPanel = document.querySelector('.right-panel') as HTMLDivElement;
+const leftPanel = document.querySelector('.left-panel') as HTMLDivElement;
 const toLastMsgBtn = document.querySelector('.to-last-msg-btn') as HTMLDivElement;
 
 let lastMsgSentAt: AnyObject = {};
@@ -195,7 +196,7 @@ socket.on('companion-read-msgs', (readMsgs: [number]) => {
     });
 });
 
-socket.on('message-deleted', (message: AnyObject) => {
+socket.on('message-removed', (message: AnyObject) => {
     console.log(message);
     // if(openChatCompanionId == message.sender_id)
     const msgEl = chatScrollable.querySelector(`.message[data-id= '${message.id}']`);
@@ -215,6 +216,21 @@ socket.on('message-deleted', (message: AnyObject) => {
         if (chatLastEl.classList.contains('date-divider')) {
             chatScrollable.removeChild(chatLastEl);
         }
+    }
+})
+
+socket.on('chat-removed', (userId: number) => {
+    console.log('removed chat id:', userId);
+    const chatItemEl = chatList.querySelector(`.chat-item[data-user-id='${userId}']`);
+    if (chatItemEl) {
+        chatList.removeChild(chatItemEl);
+
+        if (userId == openChatCompanionId) {
+            openChatCompanionId = 0;
+            chatScrollable.innerHTML = '';
+            rightPanel.classList.add('hidden');
+        }
+        alert('Чат було видалено');
     }
 })
 
@@ -252,12 +268,31 @@ function addChatItem(chatUser: AnyObject, parentEl: HTMLElement) {
     chatItem.appendChild(unreadLabel);
     chatItem.setAttribute('data-user-id', userId);
 
-    if (unreadCount == 0){
+    if (unreadCount == 0) {
         unreadLabel.classList.add("hidden");
         parentEl.appendChild(chatItem);
     }
-    else{
+    else {
         parentEl.prepend(chatItem);
+    }
+
+    if (parentEl.classList.contains('chat-list')) {
+        chatItem.addEventListener('contextmenu', (event: MouseEvent) => {
+            let options: ContextMenuOption[] = [];
+
+            options.push({
+                label: 'Видалити чат',
+                action: () => {
+                    if (confirm(`Ви впевнені, що хочете видалити чат із користувачем ${chatUser['first_name']} ${chatUser['last_name']}?`)) {
+                        socket.emit('remove-chat', chatUser['id']);
+                        console.log('delete chat request: ', chatUser['id'])
+                    }
+                }
+            });
+
+            const menu = new ContextMenu(options, leftPanel);
+            menu.show(event);
+        })
     }
 }
 
@@ -316,7 +351,7 @@ function insertMessage(message: AnyObject, endOfList = false, isNewMessage = fal
         messageEl.classList.add("my-msg");
     }
 
-    messageEl.addEventListener('contextmenu', (e: MouseEvent) => {
+    messageEl.addEventListener('contextmenu', (event: MouseEvent) => {
         let options: ContextMenuOption[] = [];
 
         options.push({
@@ -337,7 +372,7 @@ function insertMessage(message: AnyObject, endOfList = false, isNewMessage = fal
         }
 
         const menu = new ContextMenu(options, rightPanel);
-        menu.show(e);
+        menu.show(event);
     })
 
     messageEl.setAttribute('data-id', message['id']);

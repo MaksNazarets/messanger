@@ -200,4 +200,27 @@ def remove_message(id):
     db.session.delete(msg)
     db.session.commit()
 
-    emit('message-deleted', msg_to_return.to_dict())
+    emit('message-removed', msg_to_return.to_dict())
+
+
+@socketio.on('remove-chat')
+def remove_chat(user_id):
+    chat = get_chat(user_id, current_user.id)
+
+    if chat:
+        num_rows_deleted: int = db.session.query(Message).filter(Message.chat_id == chat.id).delete()
+        print('###deleted ', num_rows_deleted, ' messages')
+
+    try:
+        db.session.delete(chat)
+        db.session.commit()
+    except:
+        print("### An error ocurred while trying to delete chat")
+        return
+
+    emit('chat-removed', user_id)
+
+    companion_session_id = db.session.query(User.session_id).filter(User.id==user_id).scalar()
+
+    if companion_session_id:
+        emit('chat-removed', current_user.id, room=companion_session_id)

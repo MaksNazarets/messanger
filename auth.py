@@ -59,7 +59,7 @@ def create_account():
     else:
         pattern = r"^[a-zA-Z_][a-zA-Z0-9_]*$"
         if not re.match(pattern, username):
-            errors['username'] = 'Логін може містити лише літери, цифри та символ "_"'
+            errors['username'] = 'Логін може містити лише латинські літери, цифри та символ "_"'
 
     if not password:
         errors['password'] = 'Поле є обов\'язковим'
