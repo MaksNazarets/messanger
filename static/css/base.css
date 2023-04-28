@@ -16,6 +16,21 @@ body {
     max-height: 100dvh;
 }
 
+.wait-block{
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.7);
+    background-image: url('/static/img/wait-icon-without-bg-3.gif');
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 ::-moz-selection {
     color: #000;
     background: rgb(255, 255, 255);

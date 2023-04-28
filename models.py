@@ -72,7 +72,7 @@ class Message(db.Model):
     text = db.Column(db.Text, nullable=False)
     read_by_recipient = db.Column(db.Boolean, default=False)
 
-    conversation = db.relationship('Chat')
+    conversation = db.relationship('Chat') #change to 'chat'
     sender = db.relationship('User')
 
     def __init__(self, chat_id, sender_id, text):

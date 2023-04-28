@@ -202,13 +202,21 @@ def remove_message(id):
 
     emit('message-removed', msg_to_return.to_dict())
 
+    chat: Chat = db.session.query(Chat).filter(Chat.id==msg.chat_id).scalar()
+
+    if current_user == chat.user1 and chat.user2.session_id:
+        emit('message-removed', msg_to_return.to_dict(), room=chat.user2.session_id)
+    elif current_user == chat.user2 and chat.user1.session_id:
+        emit('message-removed', msg_to_return.to_dict(), room=chat.user1.session_id)
+
 
 @socketio.on('remove-chat')
 def remove_chat(user_id):
     chat = get_chat(user_id, current_user.id)
 
     if chat:
-        num_rows_deleted: int = db.session.query(Message).filter(Message.chat_id == chat.id).delete()
+        num_rows_deleted: int = db.session.query(
+            Message).filter(Message.chat_id == chat.id).delete()
         print('###deleted ', num_rows_deleted, ' messages')
 
     try:
@@ -220,7 +228,8 @@ def remove_chat(user_id):
 
     emit('chat-removed', user_id)
 
-    companion_session_id = db.session.query(User.session_id).filter(User.id==user_id).scalar()
+    companion_session_id = db.session.query(
+        User.session_id).filter(User.id == user_id).scalar()
 
     if companion_session_id:
         emit('chat-removed', current_user.id, room=companion_session_id)

@@ -1,5 +1,4 @@
 main {
-    /* max-width: 1000px; */
     width: 100dvw;
     width: 100%;
     height: 100dvh;
@@ -24,10 +23,25 @@ main {
 }
 
 .account-wrapper {
-    padding: 5px 10px;
+    padding: 7px 10px 7px 7px;
     border-radius: 5px;
     margin-bottom: 5px;
     background: #040404;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.acc-wrapper-prof-photo{
+    height: 1.5em;
+    width: 1.5em;
+    background-size: cover;
+    background-position: center;
+    border-radius: 50%;
+}
+
+.account-wrapper:hover{
+    outline: 1px solid#7d7d7d;
 }
 
 .current-user_name {
@@ -330,7 +344,7 @@ main {
     width: fit-content;
     max-width: 80%;
     background: #2a2a2a;
-    font-size: 17pt;
+    font-size: 1em;
     border-radius: 15px;
     border-bottom-left-radius: 0;
     transition: transform .1s;
@@ -362,6 +376,7 @@ main {
     max-height: 1em;
     font-size: 13pt;
     color: #c8c8c8;
+    user-select: none;
 }
 
 .message.my-msg .msg-meta {
@@ -511,14 +526,25 @@ main {
 
 .user-info_wrapper {
     position: relative;
-    display: flex;
-    flex-direction: column;
     max-width: 20em;
     width: 100%;
     border-radius: 15px;
-    overflow: hidden;
     background: rgb(32, 32, 32);
     transition: 0.1s;
+    overflow: auto;
+    max-height: 97dvh;
+}
+
+.user-info_wrapper > * {
+    width: 100%;
+}
+
+.user-info_wrapper > form {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border-radius: 15px;
+    overflow: hidden;
 }
 
 
@@ -537,11 +563,11 @@ main {
 
 .user-info__profile-photo {
     height: 20em;
-    /* background-image: url('/static/img/avatar_512x512.png'); */
-    /* background-image: url('/static/img/Zugpsitze_mountain.jpg'); */
-    /* background-image: url('\user_data\profile_photos\default\Zugpsitze_mountain.jpg'); */
     background-position: center;
     background-size: cover;
+    display: flex;
+    flex-direction: column;
+    justify-content: end;
 }
 
 .credentials-container {
@@ -551,14 +577,38 @@ main {
 }
 
 .credentials-container .field {
+    position: relative;
     padding: 0.4em;
     background: #292929;
-    font-size: 1.1em;
+    font-size: 1em;
+    border: none;
 }
+
+/* .credentials-container .field::before{
+    position: absolute;
+    bottom: 0;
+    left: .6em;
+    font-size: .6em;
+    color: #939393;
+} */
+
+/* .credentials-container .full-name::before {
+    content: "повне ім'я";    
+}
+.credentials-container .username::before {
+    content: "логін";    
+}
+.credentials-container .email::before {
+    content: "e-mail";    
+}
+.credentials-container .password::before {
+    content: "пароль";    
+} */
+
 
 .user-info_send-msg-btn {
     margin-top: 3px;
-    padding: 0.7em;
+    padding: 0.5em;
     text-align: center;
     background: #390095;
     transition: 0.2s;
@@ -566,13 +616,42 @@ main {
     border: none;
 }
 
-.user-info_send-msg-btn:hover {
+.user-info_send-msg-btn:hover,
+.big-profile-btn.main-btn:hover {
     background: #270067;
 }
 
-
-.user-info_send-msg-btn:active {
+.user-info_send-msg-btn:active,
+.big-profile-btn.main-btn:active {
     background: #1f0050;
+}
+
+.unfold-pass-fields-btn{
+    margin-top: 0.1em;
+    padding: .1em .3em;
+    cursor: pointer;
+}
+
+.unfold-pass-fields-btn:hover{
+    text-decoration: underline;
+}
+
+.big-profile-btn{
+    margin-top: 3px;
+    padding: 0.3em;
+    text-align: center;
+    background: #191919;
+    transition: 0.2s;
+    outline: none;
+    border: none;
+}
+
+.big-profile-btn:hover{
+    background: #000;
+}
+
+.big-profile-btn.main-btn{
+    background: #390095;
 }
 
 .no-network-wrapper {
@@ -620,6 +699,27 @@ main {
     z-index: 50;
 }
 
+.translucent{
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+}
+
+.pop-up-message {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, 200%);
+    max-width: 15em;
+    font-size: 1em;
+    text-align: center;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 0.2em 1em;
+    border-radius: .5em;
+    
+    z-index: 100;
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
     width: 5px;
@@ -641,6 +741,7 @@ main {
 ::-webkit-scrollbar-thumb:hover {
     background: #555;
 }
+
 
 .hidden {
     display: none;

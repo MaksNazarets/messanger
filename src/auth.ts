@@ -47,12 +47,12 @@ create_account_form.addEventListener('submit', (event) => {
                 ee.remove();
             })
 
-            if ('message' in data) {
+            if (data === 'Ok') {
                 insertNewElement('span', ['success-msg'], 'Обліковий запис успішно створено!', login_form, false);
                 login_form.classList.toggle('hidden');
                 create_account_form.classList.toggle('hidden');
 
-                const login_login = login_form.querySelector('#usernames') as HTMLInputElement;
+                const login_login = login_form.querySelector('#username') as HTMLInputElement;
                 login_login.value = (create_account_form.querySelector('#new-username') as HTMLInputElement).value
 
                 const login_password = login_form.querySelector('#password') as HTMLInputElement;
@@ -85,9 +85,9 @@ create_account_form.addEventListener('submit', (event) => {
                     new_un_input.classList.add('error-input')
                 }
                 if ('password' in errors) {
-                    const new_password_input = document.querySelector('#new-password')!;
-                    insertNewElement('span', ['error-msg'], errors['password'], new_password_input)
-                    new_password_input.classList.add('error-input')
+                    const pass_group = document.querySelector('.password-group')!;
+                    insertNewElement('span', ['error-msg'], errors['password'], pass_group)
+                    pass_group.classList.add('error-input')
                 }
             } else
                 console.log('Invalid response data received')

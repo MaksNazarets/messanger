@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@types/socket.io": "^3.0.2",
+    "@types/socket.io-client": "^3.0.0",
     "commonjs": "^0.0.1",
     "socket.io": "^4.6.1",
     "socket.io-client": "^4.6.1"

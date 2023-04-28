@@ -1,13 +1,28 @@
 import { before } from 'node:test';
 import { insertNewElement, isMessageVisible, debounce } from '/static/js/custom_functions.js'
 import { ContextMenu, ContextMenuOption } from './classes/ContextMenu.js';
-// import io from 'socket.io-client';
+import { UserInfo } from './classes/UserInfo.js';
+import { Socket } from 'socket.io';
+import { ProfileSettings } from './classes/ProfileSettings.js';
+import { PopUpMessage } from './classes/PopUpMessage.js';
+
+// import { io, Socket } from 'socket.io-client'; // not working
 
 type AnyObject = {
     [key: string]: any;
 }
+
+type User = {
+    id: number,
+    first_name: string,
+    last_name: string,
+    username: string,
+    is_online: boolean
+}
+
 let openChatCompanionId: number = 0;
-let openChatCompanion: AnyObject;
+let openChatCompanion: User;
+let currentUser: User;
 
 const msgInput = document.querySelector('#new-message_input') as HTMLInputElement;
 const searchInput = document.querySelector('#search-input') as HTMLInputElement;
@@ -24,9 +39,12 @@ const monthNames = ['січня', "лютого", "березня", "квітн�
 
 let firstMessage = chatContainer.querySelector('.message:last-of-type')!;
 let thirdMessage = chatContainer.querySelector('.message:nth-last-of-type(3)');
-// let currentContextMenu: ContextMenu | null = null;
 
-let socket = io.connect('http://' + location.hostname + ':' + location.port);
+
+let socket: Socket = io('http://' + location.hostname + ':' + location.port) as Socket;
+// const socket: Socket = io('http://' + location.hostname + ':' + location.port); //not working
+
+
 socket.on('connect', () => {
     console.log('connected!');
     document.querySelector('.no-network-wrapper')?.classList.add('hidden');
@@ -47,6 +65,7 @@ socket.on('get_chat_data', (chatData: AnyObject) => {
 
     openChatCompanionId = chatData['companion']['id'];
     openChatCompanion = chatData['companion'];
+    let companion = openChatCompanion;
 
     console.log(chatData);
 
@@ -58,16 +77,16 @@ socket.on('get_chat_data', (chatData: AnyObject) => {
     if (openChatCompanion['is_online']) companionInfo.classList.add('user-online');
     else companionInfo.classList.remove('user-online');
 
-    companionInfo.addEventListener('click', () => {
-        openUserInfoWindow(companion);
-    })
+    companionInfo.onclick = (e: MouseEvent) => {
+        const userInfoWindow = new UserInfo(companion, openChat);
+        userInfoWindow.show();
+    }
 
     // setting companion data
-    const profile_photo = rightPanel.querySelector('.chat-name__profile-photo') as HTMLElement;
-    profile_photo.textContent = '';
-    profile_photo.style.backgroundImage = `url('/${chatData.companion.id}/profile_photo')`;
+    const profilePhoto = rightPanel.querySelector('.chat-name__profile-photo') as HTMLElement;
+    profilePhoto.textContent = '';
+    profilePhoto.style.backgroundImage = `url('/${chatData.companion.id}/profile-photo')`;
 
-    let companion = openChatCompanion;
     rightPanel.querySelector('.chat-name__username')!.textContent = `${companion['first_name']} ${companion['last_name']}`;
 
     // populating chat with messages
@@ -101,6 +120,8 @@ socket.on('get_chat_data', (chatData: AnyObject) => {
 
     let justReadMsgsIds: number[] = [];
     unreadMessages.forEach(msgEl => {
+        if (msgEl.classList.contains('my-msg')) return;
+
         msgEl.classList.remove('unread');
         const msgId = parseInt(msgEl.getAttribute('data-id') || '');
         if (!isNaN(msgId)) {
@@ -189,6 +210,7 @@ socket.on('user-online-status-update', (user: AnyObject) => {
 })
 
 socket.on('companion-read-msgs', (readMsgs: [number]) => {
+    console.log('read', readMsgs);
     chatScrollable.querySelectorAll('.my-msg.unread').forEach(msgEl => {
         if (readMsgs.includes(parseInt(msgEl.getAttribute('data-id')!))) {
             msgEl.classList.remove('unread');
@@ -229,8 +251,18 @@ socket.on('chat-removed', (userId: number) => {
             openChatCompanionId = 0;
             chatScrollable.innerHTML = '';
             rightPanel.classList.add('hidden');
+            new PopUpMessage('Чат було видалено').show();
         }
-        alert('Чат було видалено');
+    }
+})
+
+socket.on('profile-data-update', (user: User) => {
+    console.log('user:', user);
+    const fullNameEl = document.querySelector('.current-user_name') as HTMLSpanElement;
+    if (fullNameEl) {
+        fullNameEl.innerText = `${user.first_name} ${user.last_name}`;
+
+        (document.querySelector('.acc-wrapper-prof-photo') as HTMLDivElement).style.backgroundImage = `url('/${user.id}/profile-photo?now=${new Date().getTime()}')`
     }
 })
 
@@ -249,7 +281,7 @@ function addChatItem(chatUser: AnyObject, parentEl: HTMLElement) {
     if (chatUser['is_online']) chatItem.classList.add("user-online");
 
     let profilePhoto = document.createElement("div");
-    profilePhoto.style.backgroundImage = `url('/${chatUser.id}/profile_photo')`;
+    profilePhoto.style.backgroundImage = `url('/${chatUser.id}/profile-photo')`;
     profilePhoto.classList.add("chat-item__profile-photo");
     chatItem.appendChild(profilePhoto);
 
@@ -276,10 +308,21 @@ function addChatItem(chatUser: AnyObject, parentEl: HTMLElement) {
         parentEl.prepend(chatItem);
     }
 
-    if (parentEl.classList.contains('chat-list')) {
-        chatItem.addEventListener('contextmenu', (event: MouseEvent) => {
-            let options: ContextMenuOption[] = [];
 
+    chatItem.addEventListener('contextmenu', (event: MouseEvent) => {
+        let options: ContextMenuOption[] = [];
+
+        options.push({
+            label: 'Переглянути профіль',
+            action: () => {
+                const user = chatUser;
+                delete user.unread_count;
+
+                const userInfoWindow = new UserInfo(user as User, openChat)
+                userInfoWindow.show();
+            }
+        });
+        if (parentEl.classList.contains('chat-list')) {
             options.push({
                 label: 'Видалити чат',
                 action: () => {
@@ -289,13 +332,12 @@ function addChatItem(chatUser: AnyObject, parentEl: HTMLElement) {
                     }
                 }
             });
+        }
+        const menu = new ContextMenu(options, leftPanel);
+        menu.show(event);
+    })
 
-            const menu = new ContextMenu(options, leftPanel);
-            menu.show(event);
-        })
-    }
 }
-
 
 function populateWithChatItems(chatUsers: [], parentEl: HTMLElement) {
     const chatItems = parentEl.querySelectorAll('.chat-item') || [];
@@ -438,39 +480,6 @@ function populateChatWithMessages(messages: []) {
     thirdMessage = chatContainer.querySelector('.message:nth-last-of-type(3)');
 }
 
-function openUserInfoWindow(user: AnyObject) {
-    const fullScreenContainer = document.querySelector('.full-screen-container') as HTMLElement;
-    const infoWrapper = document.querySelector('.user-info_wrapper');
-    const profilePhoto = fullScreenContainer?.querySelector('.user-info__profile-photo') as HTMLImageElement;
-    const fullName = fullScreenContainer?.querySelector('.full-name') as HTMLSpanElement;
-    const username = fullScreenContainer?.querySelector('.username') as HTMLSpanElement;
-
-    profilePhoto.style.backgroundImage = `url('/${user.id}/profile_photo')`;
-
-    fullName.textContent = `${user['first_name']} ${user['last_name']}`;
-    username.textContent = '@' + user['username'];
-
-    fullScreenContainer?.classList.remove('hidden');
-    setTimeout(() => {
-        infoWrapper?.classList.remove('minimized');
-    }, 1);
-
-    const sendMsgBtn = fullScreenContainer.querySelector('.user-info_send-msg-btn') as HTMLElement;
-
-    sendMsgBtn.onclick = () => {
-        console.log('helo');
-        fullScreenContainer.classList.add('hidden');
-        openChat(user['id']);
-    };
-
-    fullScreenContainer.addEventListener('click', (event: Event) => {
-        if (event.target !== fullScreenContainer) return;
-
-        fullScreenContainer.classList.add('hidden');
-        infoWrapper?.classList.add('minimized');
-    });
-}
-
 document.querySelector('#new-message_send-button')!.addEventListener('click', () => {
     if (msgInput.value.length > 0) {
         socket.emit('send_message', { 'to_user_id': openChatCompanionId, 'text': msgInput.value });
@@ -564,6 +573,24 @@ rightPanel.querySelector('.chat-exit-btn')?.addEventListener('click', () => {
     document.querySelector('.left-panel')?.classList.remove('hidden');
 })
 
+leftPanel.querySelector('.account-wrapper')?.addEventListener('click', () => {
+    const url = '/get-me';
+    const options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    fetch(url, options)
+        .then(response => response.json())
+        .then(user => {
+            const settingsWindow = new ProfileSettings(user);
+            settingsWindow.show();
+        })
+        .catch(error => console.error(error));
+})
+
 const observerConfig = { childList: true };
 
 // Callback function to execute when mutations are observed
@@ -577,6 +604,7 @@ const chatListChangeCallback: MutationCallback = function (mutationsList, observ
             emptyLabel.classList.remove('hidden');
     }
 };
+
 const chatListChangeObserver = new MutationObserver(chatListChangeCallback);
 chatListChangeObserver.observe(chatList, observerConfig);
 chatListChangeObserver.observe(resultList, observerConfig);

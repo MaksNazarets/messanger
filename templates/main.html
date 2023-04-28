@@ -15,6 +15,7 @@
     <main>
         <section class="left-panel">
             <div class="account-wrapper">
+                <div class="acc-wrapper-prof-photo" style="background-image: url('/{{ user.id }}/profile-photo')"></div>
                 <span class="current-user_name">{{ user.first_name }} {{ user.last_name }}</span>
             </div>
             <div class="search-wrapper">
@@ -139,7 +140,7 @@
         <span>Очікування мережі...</span>
     </div>
 
-    <div class="full-screen-container hidden">
+    <!-- <div class="full-screen-container hidden">
         <div class="user-info_wrapper minimized">
             <span class="user-info__title">Інформація про користувача</span>
             <div class="user-info__profile-photo"></div>
@@ -149,7 +150,7 @@
             </div>
             <button class="user-info_send-msg-btn">Надіслати повідомлення</button>
         </div>
-    </div>
+    </div> -->
     <script type="module" src="https://cdn.socket.io/4.6.0/socket.io.min.js"
         integrity="sha384-c79GN5VsunZvi+Q/WObgk2in0CbZsHnjEqvFxC5DxHn9lTfNce2WW6h2pH6u/kF+"
         crossorigin="anonymous"></script>
