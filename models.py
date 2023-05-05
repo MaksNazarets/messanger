@@ -11,6 +11,7 @@ class User(db.Model, UserMixin):
     password = db.Column(db.String(255), nullable=False)
     first_name = db.Column(db.String(50), nullable=True)
     last_name = db.Column(db.String(50), nullable=True)
+    has_premium = db.Column(db.Boolean, default=False)
     session_id = db.Column(db.String(50), nullable=True, unique=True)
 
     def __init__(self, first_name, last_name, username, email, password):
@@ -30,6 +31,7 @@ class User(db.Model, UserMixin):
             'email': self.email,
             'first_name': self.first_name,
             'last_name': self.last_name,
+            'has_premium': self.has_premium,
             'is_online': self.session_id is not None
         }
 
@@ -107,7 +109,7 @@ class Attachment(db.Model):
     def __init__(self, message_id, attachment_type, metadata):
         self.message_id = message_id
         self.attachment_type = attachment_type
-        self.metadata = metadata
+        self.meta = metadata
 
     def __repr__(self):
         return f'<Attachment {self.attachment_type}>'

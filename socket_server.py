@@ -1,11 +1,13 @@
+import os
 from main import socketio, db, app
-from flask import request
+from flask import request, jsonify
 from flask_login import current_user
 from flask_socketio import emit
-from models import User, Chat, Message
+from models import User, Chat, Message, Attachment
 from sqlalchemy.sql.expression import func
 from sqlalchemy import and_
-
+from werkzeug.utils import secure_filename
+import json
 
 def get_chat(user1_id, user2_id):
     chat: Chat = db.session.execute(db.select(Chat).filter(
@@ -88,7 +90,15 @@ def send_chat_data(user_id):
         last_25_msgs: list[Message] = db.session.execute(db.select(Message).where(
             Message.chat_id == chat.id).order_by(Message.timestamp.desc()).limit(25)).scalars().all()
 
+        attachments: list[Attachment] = db.session.query(Attachment)\
+                                                        .filter(
+                                                            Attachment.message_id > last_25_msgs[-1].id, 
+                                                            Attachment.message_id <= last_25_msgs[0].id
+                                                        ).all()
         json_msgs = [m.to_dict() for m in last_25_msgs]
+        for m in json_msgs:
+            if m['id'] in [a.message_id for a in attachments]:
+                m['attachments'] = [{'name': f.meta["name"], 'file_number': f.meta['file_number'], 'size': f.meta['size'], 'type': f.attachment_type} for f in attachments if f.message_id == m['id']]
 
     return_data = {
         'companion': companion.to_dict(),
@@ -129,6 +139,82 @@ def send_message(msg_data):
     emit('new-message', return_data)
     if recipient_sid is not None:
         emit('new-message', msg.to_dict(), room=recipient_sid)
+
+img_extensions = ['jpg', 'png', 'webp', 'gif', 'jpg' , 'jpeg' , 'jfif' , 'pjpeg' , 'pjp', 'svg']
+video_extensions = ['webm', 'mkv', 'flv', 'vob', 'ogg' , 'ogv' , 'gifv' , 'mng' , 'avi', 'mov', 'wmv', 'yuv', 'mp4', 'm4p', 'm4v', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'flv', 'f4v', 'f4p', 'f4a', 'f4b']
+
+@socketio.on('send_message-with-attachments')
+def send_message_with_attachments(msg_data, attachments):
+    if not current_user.has_premium:
+        return
+
+    chat = get_chat(current_user.id, msg_data['to_user_id'])
+
+    if chat is None:
+        chat = Chat(current_user.id, msg_data['to_user_id'])
+        db.session.add(chat)
+        db.session.commit()
+        user: User = db.session.query(User).filter(
+            User.id == msg_data['to_user_id']).scalar()
+
+        emit('update_chat_list', get_chat_list(current_user.id))
+        if user.session_id:
+            emit('update_chat_list', get_chat_list(
+                user.id), room=user.session_id)
+
+    msg = Message(chat.id, current_user.id, msg_data['title'])
+    db.session.add(msg)
+    try:
+        db.session.commit()
+    except Exception as e:
+        print(e)
+        return
+
+    print('msg id:', msg.id)
+
+    dir_path = os.path.join(app.root_path, 'user_data', 'attachments', f"msg_{msg.id}")
+    os.makedirs(dir_path)
+
+    atts = []
+
+    i = 1
+    for file in attachments:
+        filename = file['name']
+
+        with open(os.path.join(dir_path, filename), 'wb') as f:
+            f.write(file['data'])
+        print(f'Saved {filename} to disk.')
+
+        type = 'file'
+        extension = f"{file['name'].rsplit('.', 1)[1].lower()}"
+
+        if extension in img_extensions:
+            type = 'image'
+        elif extension in video_extensions:
+            type = 'video'
+
+        att = Attachment(msg.id, type, { 'name': str(file['name']), 'file_number': i, 'size': file['size'] })
+        db.session.add(att)
+        atts.append(att)
+        i += 1
+
+    try:
+        db.session.commit()
+
+        msg_dict = msg.to_dict()
+        msg_dict['attachments'] = [{'name': f.meta["name"], 'file_number': f.meta['file_number'], 'size': f.meta['size'], 'type': f.attachment_type} for f in atts]
+
+        recipient_sid = chat.user1.session_id if chat.user2_id == current_user.id else chat.user2.session_id
+        return_data = msg_dict
+
+        return_data['my-msg'] = True
+        emit('new-message', return_data)
+
+        if recipient_sid:
+            emit('new-message', msg_dict, room=recipient_sid)
+
+    except Exception as e:
+        print(e)
 
 
 @socketio.on('search-event')
@@ -185,8 +271,19 @@ def load_more_messages(params):
     msgs_to_return = db.session.query(Message).filter(
         Message.chat_id == chat.id, Message.id < params['start-message-id']).order_by(Message.timestamp.desc()).limit(25).all()
 
+    attachments: list[Attachment] = db.session.query(Attachment)\
+                                                        .filter(
+                                                            Attachment.message_id > msgs_to_return[-1].id, 
+                                                            Attachment.message_id <= msgs_to_return[0].id
+                                                        ).all()
+
     msgs_to_return = [m.to_dict() for m in msgs_to_return]
-    # print(msgs_to_return)
+
+    
+    for m in msgs_to_return:
+        if m['id'] in [a.message_id for a in attachments]:
+            m['attachments'] = [{'name': f.meta["name"], 'file_number': f.meta['file_number'], 'size': f.meta['size'], 'type': f.attachment_type} for f in attachments if f.message_id == m['id']]    
+
     emit('more-chat-messages-response', msgs_to_return)
 
 
@@ -197,6 +294,20 @@ def remove_message(id):
         return
 
     msg_to_return = msg
+    
+    attachments: list[Attachment] = db.session.query(Attachment).filter(Attachment.message_id==id).all()
+
+    dir_path = os.path.join(app.root_path, 'user_data', 'attachments', f"msg_{msg.id}")
+    
+    for a in attachments:
+        db.session.delete(a)
+        if os.path.exists(os.path.join(dir_path, a.meta['name'])):
+            os.remove(os.path.join(dir_path, a.meta['name']))
+            print(f"{os.path.join(dir_path, a.meta['name'])} has been deleted successfully!")
+        else:
+            print(f"{os.path.join(dir_path, a.meta['name'])} does not exist!")
+    os.rmdir(dir_path)
+
     db.session.delete(msg)
     db.session.commit()
 

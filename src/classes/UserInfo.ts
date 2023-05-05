@@ -1,3 +1,5 @@
+import { MediaViewer } from "./MediaViewer.js";
+
 export class UserInfo {
     private userId: number;
     private profilePhotoUrl: string;
@@ -60,6 +62,20 @@ export class UserInfo {
         this.fullScreenContainer.classList.remove('hidden');
 
         userInfoProfilePhoto.style.backgroundImage = `url('${this.profilePhotoUrl}')`;
+
+        userInfoProfilePhoto.onclick = () => {
+            const bigImg = new MediaViewer('image', `${this.profilePhotoUrl}`);
+            bigImg.show();
+            const backdrop = document.createElement('div');
+            backdrop.classList.add('backdrop', 'blured');
+            document.body.appendChild(backdrop);
+
+            backdrop.onclick = () => {
+                bigImg.hide();
+                backdrop.onclick = null;
+                document.body.removeChild(backdrop);
+            }
+        }
 
         fullName.textContent = `${this.fullName}`;
         username.textContent = '@' + this.username;

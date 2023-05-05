@@ -6,11 +6,11 @@ from flask_login import current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 import io
 import imghdr
-from models import User
+from models import User, Attachment
 from my_functions import get_data_errors
 
 
-@app.route('/<user_id>/profile-photo')
+@app.route('/<int:user_id>/profile-photo')
 def get_profile_photo(user_id):
     path_to_folder = os.path.join(
         app.root_path, f"user_data/profile_photos/user_{user_id}")
@@ -25,6 +25,34 @@ def get_profile_photo(user_id):
     return send_file(os.path.join(app.root_path, f"user_data/profile_photos/default/light-2.png"), mimetype='image/png')
 
 
+@app.route('/attachment')
+def get_attachment():
+    msg_id = int(request.args.get('msgid'))
+    filenumber = int(request.args.get('filenumber'))
+
+    if not msg_id or not filenumber:
+        return 400
+
+    path_to_folder = os.path.join(
+        app.root_path, f"user_data/attachments/msg_{msg_id}")
+    
+
+    if not msg_id or not filenumber:
+        return 400
+
+    path_to_folder = os.path.join(
+        app.root_path, f"user_data/attachments/msg_{msg_id}")
+
+    all_files: list[Attachment] = db.session.query(Attachment).filter(Attachment.message_id==msg_id).all()
+    filename = ''
+    for f in all_files:
+        if f.meta['file_number'] == filenumber:
+            filename = f.meta['name']
+
+    return send_file(os.path.join(path_to_folder, filename))
+
+
+
 @app.route('/get-me', methods=['POST'])
 def get_me():
     return current_user.to_dict()
@@ -34,6 +62,7 @@ def get_me():
 def set_temp_profile_photo():
     file = request.files['image']
     print('type: ', imghdr.what(file))
+    print(file)
 
     buffer = io.BytesIO()
     buffer.write(file.read())
@@ -57,13 +86,12 @@ def edit_profile_data():
     current_pass = data.get('current-pass', False)
     new_pass = data.get('new-pass', False)
 
-
     user: User = db.session.query(User).filter(
         User.id == current_user.id).scalar()
 
-
     if current_pass and new_pass:
-        errors = get_data_errors(first_name, last_name, email, username, new_pass)
+        errors = get_data_errors(
+            first_name, last_name, email, username, new_pass)
 
         if not check_password_hash(user.password, current_pass):
             errors['password'] = 'Поточний пароль неправильний'
@@ -72,7 +100,7 @@ def edit_profile_data():
 
     if errors:
         return jsonify(errors=errors), 200
-    
+
     user.first_name = first_name
     user.last_name = last_name
     user.username = username
@@ -87,17 +115,28 @@ def edit_profile_data():
         if photo:
             extension = os.path.splitext(photo.filename)[-1]
 
-            directory = os.path.join(app.root_path, f"user_data/profile_photos/user_{current_user.id}")
+            directory = os.path.join(
+                app.root_path, f"user_data/profile_photos/user_{current_user.id}")
             for filename in os.listdir(directory):
                 name = os.path.splitext(filename)[0]
                 if name == "1":
                     os.remove(os.path.join(directory, filename))
-                    
+
             photo.save(f"{directory}/1{extension}")
-        
-        socketio.emit('profile-data-update', user.to_dict(), room=user.session_id)
+
+        socketio.emit('profile-data-update',
+                      user.to_dict(), room=user.session_id)
         return jsonify('Ok'), 200
-    
+
     except:
         return 500
 
+
+@app.route('/process-premium-status-query', methods=['POST'])
+def process_premium_status_query():
+    user: User = db.session.query(User).filter(
+        User.id == current_user.id).scalar()
+    user.has_premium = True
+    db.session.commit()
+
+    return jsonify({'status': 'success'}), 200

@@ -1,4 +1,6 @@
+import { MediaViewer } from "./MediaViewer.js";
 import { PopUpMessage } from "./PopUpMessage.js";
+import { PremiumWindow } from "./PremiumWindow.js";
 export class ProfileSettings {
     constructor(user) {
         this.handleCloseWindow = (event) => {
@@ -31,8 +33,51 @@ export class ProfileSettings {
         // Create the user info profile photo element
         const userInfoProfilePhoto = document.createElement('div');
         userInfoProfilePhoto.classList.add('user-info__profile-photo');
+        const premiumStatusLabel = document.createElement('span');
+        premiumStatusLabel.className = 'premium-status-label';
+        premiumStatusLabel.setAttribute('title', 'Статус преміум');
+        premiumStatusLabel.style.backgroundImage = `url("/static/img/${this.user.has_premium ? 'star-premium-min.png' : 'star-not-premium-min.png'}`;
+        userInfoProfilePhoto.appendChild(premiumStatusLabel);
+        premiumStatusLabel.onclick = () => {
+            const options = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            };
+            fetch('/get-me', options)
+                .then(response => response.json())
+                .then(user => {
+                const premiumWindow = new PremiumWindow(user, this.fullScreenContainer);
+                const showed = premiumWindow.show();
+                if (showed) {
+                    userInfoWrapper.classList.add('blured');
+                }
+                userInfoWrapper.onclick = (e) => {
+                    e.preventDefault();
+                    userInfoWrapper.classList.remove('blured');
+                    userInfoWrapper.onclick = null;
+                    premiumWindow.hide();
+                };
+            })
+                .catch(error => console.error(error));
+        };
         _userInfoScrollBody.appendChild(userInfoProfilePhoto);
         userInfoProfilePhoto.style.backgroundImage = `url('/${this.user.id}/profile-photo?now=${new Date().getTime()}')`;
+        userInfoProfilePhoto.onclick = (e) => {
+            if (e.target && e.target !== userInfoProfilePhoto)
+                return;
+            const bigImg = new MediaViewer('image', `/${this.user.id}/profile-photo?now=${new Date().getTime()}`);
+            bigImg.show();
+            const backdrop = document.createElement('div');
+            backdrop.classList.add('backdrop', 'blured');
+            document.body.appendChild(backdrop);
+            backdrop.onclick = () => {
+                bigImg.hide();
+                backdrop.onclick = null;
+                document.body.removeChild(backdrop);
+            };
+        };
         // Create the credentials container element
         const credentialsContainer = document.createElement('div');
         credentialsContainer.classList.add('credentials-container');

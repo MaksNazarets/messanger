@@ -1,9 +1,10 @@
-var _a, _b;
+var _a, _b, _c, _d, _e;
 import { isMessageVisible } from '/static/js/custom_functions.js';
 import { ContextMenu } from './classes/ContextMenu.js';
 import { UserInfo } from './classes/UserInfo.js';
 import { ProfileSettings } from './classes/ProfileSettings.js';
 import { PopUpMessage } from './classes/PopUpMessage.js';
+import { MediaViewer } from './classes/MediaViewer.js';
 let openChatCompanionId = 0;
 let openChatCompanion;
 let currentUser;
@@ -16,11 +17,16 @@ const chatScrollable = document.querySelector('.chat-scrollable');
 const rightPanel = document.querySelector('.right-panel');
 const leftPanel = document.querySelector('.left-panel');
 const toLastMsgBtn = document.querySelector('.to-last-msg-btn');
+const attachFileWindow = rightPanel.querySelector('.attach-file-modal');
+const attachedFilesInput = document.querySelector('#attached-files');
+const fileContainer = document.querySelector('.file-container');
+if (!attachedFilesInput)
+    msgInput.classList.add('fully-rounded');
 let lastMsgSentAt = {};
 const monthNames = ['січня', "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
 let firstMessage = chatContainer.querySelector('.message:last-of-type');
 let thirdMessage = chatContainer.querySelector('.message:nth-last-of-type(3)');
-let socket = io('http://' + location.hostname + ':' + location.port);
+let socket = io('https://' + location.hostname + ':' + location.port);
 // const socket: Socket = io('http://' + location.hostname + ':' + location.port); //not working
 socket.on('connect', () => {
     var _a;
@@ -117,7 +123,6 @@ socket.on('new-message', (msgData) => {
         }
     }
     else {
-        console.log('sdaa');
         let messageEl = insertMessage(msgData, true, true);
         messageEl.classList.add("msg-minimized");
         setTimeout(() => {
@@ -309,12 +314,12 @@ function insertMessage(message, endOfList = false, isNewMessage = false) {
     const sentTime = `${hours}:${mins}`;
     if (!lastMsgSentAt[openChatCompanionId.toString()])
         lastMsgSentAt[openChatCompanionId.toString()] = sentAt;
-    let messageEl = document.createElement("span");
+    const messageEl = document.createElement("span");
     messageEl.classList.add("message");
     if (message['sender_id'] != openChatCompanionId) {
         messageEl.classList.add("my-msg");
     }
-    messageEl.addEventListener('contextmenu', (event) => {
+    messageEl.oncontextmenu = (event) => {
         let options = [];
         options.push({
             label: 'Копіювати текст',
@@ -333,10 +338,68 @@ function insertMessage(message, endOfList = false, isNewMessage = false) {
         }
         const menu = new ContextMenu(options, rightPanel);
         menu.show(event);
-    });
+    };
     messageEl.setAttribute('data-id', message['id']);
     const messageContentEl = document.createElement('span');
     messageContentEl.textContent = message['text'];
+    if (message['attachments']) {
+        const fileContainer = document.createElement('div');
+        fileContainer.className = 'msg-file-container';
+        message['attachments'].forEach((file) => {
+            if (file['type'] == 'file') {
+                const fileEl = document.createElement('a');
+                fileEl.className = 'msg-file';
+                fileEl.href = `/attachment?msgid=${message['id']}&filenumber=${file['file_number']}`;
+                fileEl.setAttribute('download', 'true');
+                const fileNameEl = document.createElement('span');
+                fileNameEl.className = 'file-name-label';
+                fileNameEl.innerText = file['name'];
+                const fileSizeEl = document.createElement('span');
+                fileSizeEl.className = 'file-size-label';
+                fileSizeEl.innerText = (Math.round(file['size'] / 1024)).toString() + 'КБ';
+                fileEl.appendChild(fileNameEl);
+                fileEl.appendChild(fileSizeEl);
+                fileContainer.appendChild(fileEl);
+            }
+            else if (file['type'] == 'image') {
+                const imgEl = document.createElement('img');
+                imgEl.src = `/attachment?msgid=${message['id']}&filenumber=${file['file_number']}`;
+                fileContainer.appendChild(imgEl);
+                imgEl.onclick = () => {
+                    const bigImg = new MediaViewer('image', `/attachment?msgid=${message['id']}&filenumber=${file['file_number']}`);
+                    bigImg.show();
+                    const backdrop = document.createElement('div');
+                    backdrop.classList.add('backdrop', 'blured');
+                    document.body.appendChild(backdrop);
+                    backdrop.onclick = () => {
+                        bigImg.hide();
+                        backdrop.onclick = null;
+                        document.body.removeChild(backdrop);
+                    };
+                };
+            }
+            else if (file['type'] == 'video') {
+                const videoEl = document.createElement('video');
+                const sourceEl = document.createElement('source');
+                sourceEl.src = `/attachment?msgid=${message['id']}&filenumber=${file['file_number']}`;
+                videoEl.appendChild(sourceEl);
+                fileContainer.appendChild(videoEl);
+                videoEl.onclick = () => {
+                    const bigVideo = new MediaViewer('video', `/attachment?msgid=${message['id']}&filenumber=${file['file_number']}`);
+                    bigVideo.show();
+                    const backdrop = document.createElement('div');
+                    backdrop.classList.add('backdrop', 'blured');
+                    document.body.appendChild(backdrop);
+                    backdrop.onclick = () => {
+                        bigVideo.hide();
+                        backdrop.onclick = null;
+                        document.body.removeChild(backdrop);
+                    };
+                };
+            }
+        });
+        messageEl.appendChild(fileContainer);
+    }
     messageEl.appendChild(messageContentEl);
     const messageMetaWrapper = document.createElement('div');
     messageMetaWrapper.classList.add('msg-meta');
@@ -356,7 +419,7 @@ function insertMessage(message, endOfList = false, isNewMessage = false) {
     messageEl.appendChild(messageMetaWrapper);
     if (!message['read_by_recipient'])
         messageEl.classList.add('unread');
-    if (sentAt != lastMsgSentAt[openChatCompanionId.toString()] && !isNewMessage /*&& chatScrollable.hasChildNodes()*/) {
+    if (sentAt != lastMsgSentAt[openChatCompanionId.toString()] && !isNewMessage) {
         insertDateDivider(lastMsgSentAt[openChatCompanionId.toString()]);
         lastMsgSentAt[openChatCompanionId.toString()] = sentAt;
     }
@@ -405,6 +468,78 @@ msgInput.addEventListener("keyup", function (event) {
         event.preventDefault();
         document.querySelector('#new-message_send-button').click();
     }
+});
+(_a = document.querySelector('#attach-file-button')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', (e) => {
+    document.querySelector('#file-title').value = msgInput.value;
+    attachFileWindow.classList.remove('hidden');
+    setTimeout(() => {
+        attachFileWindow.classList.remove('minimized');
+    }, 1);
+    const backdrop = document.createElement('div');
+    backdrop.className = 'full-screen-container';
+    document.body.appendChild(backdrop);
+    backdrop.onmousedown = (e) => {
+        document.body.removeChild(backdrop);
+        attachFileWindow.classList.add('minimized', 'hidden');
+        backdrop.onmousedown = null;
+        fileContainer.innerHTML = '';
+    };
+    if (!fileContainer.hasChildNodes()) {
+        const placeholder = document.createElement('span');
+        placeholder.className = 'file-placeholder';
+        placeholder.innerText = 'Нічого не вибрано...';
+        fileContainer.appendChild(placeholder);
+    }
+    else
+        document.querySelector('.send-file-btn').disabled = false;
+});
+(_b = document.querySelector('.choose-file-btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', () => {
+    document.querySelector('#attached-files').click();
+});
+attachedFilesInput === null || attachedFilesInput === void 0 ? void 0 : attachedFilesInput.addEventListener('change', (e) => {
+    const files = attachedFilesInput.files;
+    fileContainer.innerHTML = '';
+    if (files && files.length > 0) {
+        let totalSize = 0;
+        for (let f of files) {
+            console.log(f.name);
+            const fileItem = document.createElement('span');
+            fileItem.classList.add('file-item');
+            fileItem.innerText = f.name;
+            fileContainer.appendChild(fileItem);
+            totalSize += f.size;
+            if (totalSize > 5 * 1024 * 1024) {
+                new PopUpMessage('Максимальний розмір файлу - 5 МБ').show();
+                fileContainer.innerHTML = '';
+                attachedFilesInput.value = '';
+            }
+        }
+    }
+    if (!fileContainer.hasChildNodes()) {
+        const placeholder = document.createElement('span');
+        placeholder.className = 'file-placeholder';
+        placeholder.innerText = 'Нічого не вибрано...';
+        fileContainer.appendChild(placeholder);
+        document.querySelector('.send-file-btn').disabled = true;
+    }
+    else
+        document.querySelector('.send-file-btn').disabled = false;
+});
+(_c = document.querySelector('.send-file-btn')) === null || _c === void 0 ? void 0 : _c.addEventListener('click', () => {
+    const files = attachedFilesInput === null || attachedFilesInput === void 0 ? void 0 : attachedFilesInput.files;
+    const fileData = [];
+    if (files) {
+        for (let f of files) {
+            fileData.push({ name: f.name, data: f, size: f.size });
+        }
+        socket.emit('send_message-with-attachments', { 'to_user_id': openChatCompanionId, 'title': document.querySelector('#file-title').value }, fileData);
+    }
+    // closing the window
+    const backdrop = document.querySelector('.full-screen-container');
+    backdrop.onmousedown = null;
+    document.body.removeChild(backdrop);
+    attachFileWindow.classList.add('minimized', 'hidden');
+    fileContainer.innerHTML = '';
 });
 searchInput.addEventListener('input', () => {
     if (searchInput.value.length == 0) {
@@ -465,20 +600,19 @@ toLastMsgBtn.addEventListener('click', () => {
     chatContainer.scrollTop = 0;
     // toLastMsgBtn.classList.add('hidden');
 });
-(_a = rightPanel.querySelector('.chat-exit-btn')) === null || _a === void 0 ? void 0 : _a.addEventListener('click', () => {
+(_d = rightPanel.querySelector('.chat-exit-btn')) === null || _d === void 0 ? void 0 : _d.addEventListener('click', () => {
     var _a;
     openChatCompanionId = 0;
     (_a = document.querySelector('.left-panel')) === null || _a === void 0 ? void 0 : _a.classList.remove('hidden');
 });
-(_b = leftPanel.querySelector('.account-wrapper')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', () => {
-    const url = '/get-me';
+(_e = leftPanel.querySelector('.account-wrapper')) === null || _e === void 0 ? void 0 : _e.addEventListener('click', () => {
     const options = {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         }
     };
-    fetch(url, options)
+    fetch('/get-me', options)
         .then(response => response.json())
         .then(user => {
         const settingsWindow = new ProfileSettings(user);
