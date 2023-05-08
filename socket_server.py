@@ -9,6 +9,7 @@ from sqlalchemy import and_
 from werkzeug.utils import secure_filename
 import json
 
+
 def get_chat(user1_id, user2_id):
     chat: Chat = db.session.execute(db.select(Chat).filter(
         and_(Chat.user1_id == user1_id, Chat.user2_id == user2_id)
@@ -91,14 +92,15 @@ def send_chat_data(user_id):
             Message.chat_id == chat.id).order_by(Message.timestamp.desc()).limit(25)).scalars().all()
 
         attachments: list[Attachment] = db.session.query(Attachment)\
-                                                        .filter(
-                                                            Attachment.message_id > last_25_msgs[-1].id, 
-                                                            Attachment.message_id <= last_25_msgs[0].id
-                                                        ).all()
+            .filter(
+            Attachment.message_id > last_25_msgs[-1].id,
+            Attachment.message_id <= last_25_msgs[0].id
+        ).all()
         json_msgs = [m.to_dict() for m in last_25_msgs]
         for m in json_msgs:
             if m['id'] in [a.message_id for a in attachments]:
-                m['attachments'] = [{'name': f.meta["name"], 'file_number': f.meta['file_number'], 'size': f.meta['size'], 'type': f.attachment_type} for f in attachments if f.message_id == m['id']]
+                m['attachments'] = [{'name': f.meta["name"], 'file_number': f.meta['file_number'],
+                                     'size': f.meta['size'], 'type': f.attachment_type} for f in attachments if f.message_id == m['id']]
 
     return_data = {
         'companion': companion.to_dict(),
@@ -140,8 +142,12 @@ def send_message(msg_data):
     if recipient_sid is not None:
         emit('new-message', msg.to_dict(), room=recipient_sid)
 
-img_extensions = ['jpg', 'png', 'webp', 'gif', 'jpg' , 'jpeg' , 'jfif' , 'pjpeg' , 'pjp', 'svg']
-video_extensions = ['webm', 'mkv', 'flv', 'vob', 'ogg' , 'ogv' , 'gifv' , 'mng' , 'avi', 'mov', 'wmv', 'yuv', 'mp4', 'm4p', 'm4v', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'flv', 'f4v', 'f4p', 'f4a', 'f4b']
+
+img_extensions = ['jpg', 'png', 'webp', 'gif',
+                  'jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp', 'svg']
+video_extensions = ['webm', 'mkv', 'flv', 'vob', 'ogg', 'ogv', 'gifv', 'mng', 'avi', 'mov', 'wmv',
+                    'yuv', 'mp4', 'm4p', 'm4v', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'flv', 'f4v', 'f4p', 'f4a', 'f4b']
+
 
 @socketio.on('send_message-with-attachments')
 def send_message_with_attachments(msg_data, attachments):
@@ -172,7 +178,8 @@ def send_message_with_attachments(msg_data, attachments):
 
     print('msg id:', msg.id)
 
-    dir_path = os.path.join(app.root_path, 'user_data', 'attachments', f"msg_{msg.id}")
+    dir_path = os.path.join(app.root_path, 'user_data',
+                            'attachments', f"msg_{msg.id}")
     os.makedirs(dir_path)
 
     atts = []
@@ -193,7 +200,8 @@ def send_message_with_attachments(msg_data, attachments):
         elif extension in video_extensions:
             type = 'video'
 
-        att = Attachment(msg.id, type, { 'name': str(file['name']), 'file_number': i, 'size': file['size'] })
+        att = Attachment(msg.id, type, {'name': str(
+            file['name']), 'file_number': i, 'size': file['size']})
         db.session.add(att)
         atts.append(att)
         i += 1
@@ -202,7 +210,8 @@ def send_message_with_attachments(msg_data, attachments):
         db.session.commit()
 
         msg_dict = msg.to_dict()
-        msg_dict['attachments'] = [{'name': f.meta["name"], 'file_number': f.meta['file_number'], 'size': f.meta['size'], 'type': f.attachment_type} for f in atts]
+        msg_dict['attachments'] = [{'name': f.meta["name"], 'file_number': f.meta['file_number'],
+                                    'size': f.meta['size'], 'type': f.attachment_type} for f in atts]
 
         recipient_sid = chat.user1.session_id if chat.user2_id == current_user.id else chat.user2.session_id
         return_data = msg_dict
@@ -272,17 +281,17 @@ def load_more_messages(params):
         Message.chat_id == chat.id, Message.id < params['start-message-id']).order_by(Message.timestamp.desc()).limit(25).all()
 
     attachments: list[Attachment] = db.session.query(Attachment)\
-                                                        .filter(
-                                                            Attachment.message_id > msgs_to_return[-1].id, 
-                                                            Attachment.message_id <= msgs_to_return[0].id
-                                                        ).all()
+        .filter(
+        Attachment.message_id > msgs_to_return[-1].id,
+        Attachment.message_id <= msgs_to_return[0].id
+    ).all()
 
     msgs_to_return = [m.to_dict() for m in msgs_to_return]
 
-    
     for m in msgs_to_return:
         if m['id'] in [a.message_id for a in attachments]:
-            m['attachments'] = [{'name': f.meta["name"], 'file_number': f.meta['file_number'], 'size': f.meta['size'], 'type': f.attachment_type} for f in attachments if f.message_id == m['id']]    
+            m['attachments'] = [{'name': f.meta["name"], 'file_number': f.meta['file_number'],
+                                 'size': f.meta['size'], 'type': f.attachment_type} for f in attachments if f.message_id == m['id']]
 
     emit('more-chat-messages-response', msgs_to_return)
 
@@ -294,16 +303,19 @@ def remove_message(id):
         return
 
     msg_to_return = msg
-    
-    attachments: list[Attachment] = db.session.query(Attachment).filter(Attachment.message_id==id).all()
 
-    dir_path = os.path.join(app.root_path, 'user_data', 'attachments', f"msg_{msg.id}")
-    
+    attachments: list[Attachment] = db.session.query(
+        Attachment).filter(Attachment.message_id == id).all()
+
+    dir_path = os.path.join(app.root_path, 'user_data',
+                            'attachments', f"msg_{msg.id}")
+
     for a in attachments:
         db.session.delete(a)
         if os.path.exists(os.path.join(dir_path, a.meta['name'])):
             os.remove(os.path.join(dir_path, a.meta['name']))
-            print(f"{os.path.join(dir_path, a.meta['name'])} has been deleted successfully!")
+            print(
+                f"{os.path.join(dir_path, a.meta['name'])} has been deleted successfully!")
         else:
             print(f"{os.path.join(dir_path, a.meta['name'])} does not exist!")
     os.rmdir(dir_path)
@@ -313,12 +325,14 @@ def remove_message(id):
 
     emit('message-removed', msg_to_return.to_dict())
 
-    chat: Chat = db.session.query(Chat).filter(Chat.id==msg.chat_id).scalar()
+    chat: Chat = db.session.query(Chat).filter(Chat.id == msg.chat_id).scalar()
 
     if current_user == chat.user1 and chat.user2.session_id:
-        emit('message-removed', msg_to_return.to_dict(), room=chat.user2.session_id)
+        emit('message-removed', msg_to_return.to_dict(),
+             room=chat.user2.session_id)
     elif current_user == chat.user2 and chat.user1.session_id:
-        emit('message-removed', msg_to_return.to_dict(), room=chat.user1.session_id)
+        emit('message-removed', msg_to_return.to_dict(),
+             room=chat.user1.session_id)
 
 
 @socketio.on('remove-chat')
@@ -326,16 +340,35 @@ def remove_chat(user_id):
     chat = get_chat(user_id, current_user.id)
 
     if chat:
-        num_rows_deleted: int = db.session.query(
-            Message).filter(Message.chat_id == chat.id).delete()
-        print('###deleted ', num_rows_deleted, ' messages')
+        msgs: int = db.session.query(
+            Message).filter(Message.chat_id == chat.id).all()
+        
+        print(msgs)
+        for m in msgs:
+            attachments: list[Attachment] = db.session.query(
+            Attachment).filter(Attachment.message_id == m.id).all()
 
-    try:
+            if attachments:
+                dir_path = os.path.join(app.root_path, 'user_data',
+                                    'attachments', f"msg_{m.id}")
+                for a in attachments:
+                    db.session.delete(a)
+                    if os.path.exists(os.path.join(dir_path, a.meta['name'])):
+                        os.remove(os.path.join(dir_path, a.meta['name']))
+                        print(
+                            f"{os.path.join(dir_path, a.meta['name'])} has been deleted successfully!")
+                    else:
+                        print(f"{os.path.join(dir_path, a.meta['name'])} does not exist!")
+
+                os.rmdir(dir_path)
+            db.session.delete(m)
+        
         db.session.delete(chat)
-        db.session.commit()
-    except:
-        print("### An error ocurred while trying to delete chat")
-        return
+        try:
+            db.session.commit()
+        except:
+            print("### An error ocurred while trying to delete chat")
+            return
 
     emit('chat-removed', user_id)
 

@@ -125,7 +125,7 @@ def edit_profile_data():
             photo.save(f"{directory}/1{extension}")
 
         socketio.emit('profile-data-update',
-                      user.to_dict(), room=user.session_id)
+                      user.to_dict())
         return jsonify('Ok'), 200
 
     except:

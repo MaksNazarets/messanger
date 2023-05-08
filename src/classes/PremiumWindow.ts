@@ -34,7 +34,7 @@ export class PremiumWindow {
             })
 
             const button = document.createElement('button');
-            button.textContent = 'Отримати переміум статус';
+            button.textContent = 'Отримати преміум статус';
 
             button.onclick = () => {
                 console.log('hello');

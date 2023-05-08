@@ -26,7 +26,7 @@ let lastMsgSentAt = {};
 const monthNames = ['січня', "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
 let firstMessage = chatContainer.querySelector('.message:last-of-type');
 let thirdMessage = chatContainer.querySelector('.message:nth-last-of-type(3)');
-let socket = io('https://' + location.hostname + ':' + location.port);
+let socket = io('http://' + location.hostname + ':' + location.port);
 // const socket: Socket = io('http://' + location.hostname + ':' + location.port); //not working
 socket.on('connect', () => {
     var _a;

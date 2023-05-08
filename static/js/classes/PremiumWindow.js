@@ -25,7 +25,7 @@ export class PremiumWindow {
                     list.appendChild(item);
                 });
                 const button = document.createElement('button');
-                button.textContent = 'Отримати переміум статус';
+                button.textContent = 'Отримати преміум статус';
                 button.onclick = () => {
                     console.log('hello');
                     this.wrapper.innerHTML = '';
