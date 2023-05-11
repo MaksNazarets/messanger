@@ -143,11 +143,9 @@ def send_message(msg_data):
         emit('new-message', msg.to_dict(), room=recipient_sid)
 
 
-img_extensions = ['jpg', 'png', 'webp', 'gif',
-                  'jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp', 'svg']
-video_extensions = ['webm', 'mkv', 'flv', 'vob', 'ogg', 'ogv', 'gifv', 'mng', 'avi', 'mov', 'wmv',
+img_extensions = ['jpg', 'png', 'webp', 'gif','jpg', 'jpeg', 'jfif', 'pjpeg', 'pjp', 'svg']
+video_extensions = ['webm', 'mkv', 'flv', 'vob', 'ogg', 'ogv', 'gifv', 'mng', 'avi', 'mov', 'wmv', 
                     'yuv', 'mp4', 'm4p', 'm4v', 'mpg', 'mp2', 'mpeg', 'mpe', 'mpv', 'flv', 'f4v', 'f4p', 'f4a', 'f4b']
-
 
 @socketio.on('send_message-with-attachments')
 def send_message_with_attachments(msg_data, attachments):
@@ -307,18 +305,19 @@ def remove_message(id):
     attachments: list[Attachment] = db.session.query(
         Attachment).filter(Attachment.message_id == id).all()
 
-    dir_path = os.path.join(app.root_path, 'user_data',
+    if attachments:
+        dir_path = os.path.join(app.root_path, 'user_data',
                             'attachments', f"msg_{msg.id}")
-
-    for a in attachments:
-        db.session.delete(a)
-        if os.path.exists(os.path.join(dir_path, a.meta['name'])):
-            os.remove(os.path.join(dir_path, a.meta['name']))
-            print(
-                f"{os.path.join(dir_path, a.meta['name'])} has been deleted successfully!")
-        else:
-            print(f"{os.path.join(dir_path, a.meta['name'])} does not exist!")
-    os.rmdir(dir_path)
+        
+        for a in attachments:
+            db.session.delete(a)
+            if os.path.exists(os.path.join(dir_path, a.meta['name'])):
+                os.remove(os.path.join(dir_path, a.meta['name']))
+                print(
+                    f"{os.path.join(dir_path, a.meta['name'])} has been deleted successfully!")
+            else:
+                print(f"{os.path.join(dir_path, a.meta['name'])} does not exist!")
+        os.rmdir(dir_path)
 
     db.session.delete(msg)
     db.session.commit()

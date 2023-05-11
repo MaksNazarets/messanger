@@ -38,7 +38,7 @@ const attachFileWindow = rightPanel.querySelector('.attach-file-modal') as HTMLD
 const attachedFilesInput = document.querySelector('#attached-files') as HTMLInputElement | null;
 const fileContainer = document.querySelector('.file-container') as HTMLDivElement;
 
-if(!attachedFilesInput) msgInput.classList.add('fully-rounded');
+if (!attachedFilesInput) msgInput.classList.add('fully-rounded');
 
 let lastMsgSentAt: AnyObject = {};
 const monthNames = ['січня', "лютого", "березня", "квітня", "травня", "червня", "липня", "серпня", "вересня", "жовтня", "листопада", "грудня"];
@@ -75,6 +75,7 @@ socket.on('get_chat_data', (chatData: AnyObject) => {
 
     console.log(chatData);
 
+    document.querySelector('.right-panel-placeholder')?.remove()
     rightPanel.classList.remove('hidden');
 
     // setting user online status
@@ -223,7 +224,6 @@ socket.on('companion-read-msgs', (readMsgs: [number]) => {
 
 socket.on('message-removed', (message: AnyObject) => {
     console.log(message);
-    // if(openChatCompanionId == message.sender_id)
     const msgEl = chatScrollable.querySelector(`.message[data-id= '${message.id}']`);
     if (msgEl) {
         const prevSibling = msgEl.previousSibling as HTMLElement;
@@ -235,12 +235,14 @@ socket.on('message-removed', (message: AnyObject) => {
             chatScrollable.removeChild(nextSibling);
         }
 
-        chatScrollable.removeChild(msgEl);
-
-        const chatLastEl = chatScrollable.firstChild as HTMLElement;
-        if (chatLastEl.classList.contains('date-divider')) {
-            chatScrollable.removeChild(chatLastEl);
-        }
+        msgEl.classList.add('blured');
+        setTimeout(() => {
+            chatScrollable.removeChild(msgEl);
+            const chatLastEl = chatScrollable.firstChild as HTMLElement;
+            if (chatLastEl.classList.contains('date-divider')) {
+                chatScrollable.removeChild(chatLastEl);
+            }
+        }, 100);
     }
 })
 
@@ -548,7 +550,7 @@ function populateChatWithMessages(messages: []) {
 }
 
 document.querySelector('#new-message_send-button')!.addEventListener('click', () => {
-    if (msgInput.value.length > 0) {
+    if (msgInput.value.trim().length > 0) {
         socket.emit('send_message', { 'to_user_id': openChatCompanionId, 'text': msgInput.value });
 
         const unreadLabel = document.querySelector('.unread-msgs-section');
@@ -588,17 +590,18 @@ document.querySelector('#attach-file-button')?.addEventListener('click', (e) => 
         document.body.removeChild(backdrop);
         attachFileWindow.classList.add('minimized', 'hidden');
         backdrop.onmousedown = null;
+
+        attachFileWindow.classList.add('minimized', 'hidden');
+        attachedFilesInput!.value = '';
         fileContainer.innerHTML = '';
     }
 
-    if (!fileContainer.hasChildNodes()) {
-        const placeholder = document.createElement('span');
-        placeholder.className = 'file-placeholder';
-        placeholder.innerText = 'Нічого не вибрано...';
-        fileContainer.appendChild(placeholder);
-    }
-    else
-        (document.querySelector('.send-file-btn') as HTMLButtonElement).disabled = false;
+    const placeholder = document.createElement('span');
+    placeholder.className = 'file-placeholder';
+    placeholder.innerText = 'Нічого не вибрано...';
+    fileContainer.appendChild(placeholder);
+
+    (document.querySelector('.send-file-btn') as HTMLButtonElement).disabled = true;
 })
 
 document.querySelector('.choose-file-btn')?.addEventListener('click', () => {
@@ -622,7 +625,11 @@ attachedFilesInput?.addEventListener('change', (e: Event) => {
 
             if (totalSize > 5 * 1024 * 1024) {
                 new PopUpMessage('Максимальний розмір файлу - 5 МБ').show();
-                fileContainer.innerHTML = '';
+                const placeholder = document.createElement('span');
+
+                placeholder.className = 'file-placeholder';
+                placeholder.innerText = 'Нічого не вибрано...';
+                fileContainer.appendChild(placeholder);
 
                 attachedFilesInput.value = '';
             }
@@ -660,6 +667,7 @@ document.querySelector('.send-file-btn')?.addEventListener('click', () => {
     backdrop.onmousedown = null;
     document.body.removeChild(backdrop);
     attachFileWindow.classList.add('minimized', 'hidden');
+    attachedFilesInput!.value = '';
     fileContainer.innerHTML = '';
 })
 

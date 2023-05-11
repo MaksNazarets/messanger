@@ -14,6 +14,7 @@
 <body>
     <noscript>Для роботи сервісу обов'язковий дозвіл використовувати javascript...</noscript>
     <main>
+        <div id="bg-filter"></div>
         <section class="left-panel">
             <div class="account-wrapper">
                 <div class="acc-wrapper-prof-photo" style="background-image: url('/{{ user.id }}/profile-photo')"></div>
@@ -104,7 +105,7 @@
             </div>
             <div class="new-message_wrapper">
                 <input type="text" id="new-message_input" placeholder="Write a message...">
-                
+
                 {% if user.has_premium %}
                 <button id="attach-file-button">
                     <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
@@ -158,9 +159,9 @@
                 <div class="attach-file-modal minimized hidden">
                     <input type="file" name="attached-files" id="attached-files" multiple>
                     <div class="file-container">
-                       <span class="file-placeholder">
+                        <!-- <span class="file-placeholder">
                         Нічого не вибрано...
-                       </span>
+                       </span> -->
                     </div>
                     <button class="choose-file-btn">вибрати файли</button>
                     <textarea name="file-title" id="file-title" rows="2" placeholder="підпис"></textarea>
@@ -168,8 +169,11 @@
                 </div>
                 {% endif %}
             </div>
+        </section>
+        <div class="right-panel-placeholder">
+
+        </div>
     </main>
-    </section>
 
     <div class="no-network-wrapper hidden">
         <span>Очікування мережі...</span>

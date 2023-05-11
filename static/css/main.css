@@ -6,6 +6,8 @@ main {
     background: #222222;
     display: flex;
     outline: solid 1px #3a3a3a;
+    background-image: url('/static/img/bg.jpg');
+    background-size: contain;
 }
 
 /* LEFT PANEL */
@@ -196,16 +198,25 @@ main {
 
 /* RIGHT PANEL */
 
-.right-panel {
+.right-panel,
+.right-panel-placeholder {
     position: relative;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background: rgb(41, 41, 41);
-    background: linear-gradient(153deg, rgba(41, 41, 41, 1) 0%, rgba(22, 22, 22, 1) 50%, rgba(41, 41, 41, 1) 100%);
+    /* background: rgb(41, 41, 41); */
+    /* background: linear-gradient(153deg, rgba(41, 41, 41, 1) 0%, rgba(22, 22, 22, 1) 50%, rgba(41, 41, 41, 1) 100%); */
 }
 
+#bg-filter{
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100dvw;
+    height: 100dvh;
+    backdrop-filter: blur(3px) brightness(.2);
+}
 
 .chat-name_wrapper {
     position: relative;
@@ -499,18 +510,32 @@ main {
     transition: transform .1s;
     transform-origin: left;
     word-wrap: break-word;
-    /* padding: 5px; */
 }
 
 .message::before {
-    position: absolute;
     content: "";
+    position: absolute;
     width: 0;
     height: 0;
     left: -9px;
     bottom: 0px;
     border-bottom: 10px solid #2a2a2a;
     border-left: 10px solid transparent;
+}
+
+.message.my-msg {
+    background: #695fb1;
+    align-self: flex-end;
+    border-radius: 15px;
+    border-bottom-right-radius: 0;
+    transform-origin: right;
+}
+
+.message.my-msg::before {
+    left: auto;
+    right: -9px;
+    border-bottom: 10px solid #695fb1;
+    border-right: 10px solid transparent;
 }
 
 .message>span{
@@ -551,26 +576,14 @@ main {
     right: -1px
 }
 
-.message.my-msg {
-    background: #695fb1;
-    align-self: flex-end;
-    border-radius: 15px;
-    border-bottom-right-radius: 0;
-    transform-origin: right;
-}
-
-.message.my-msg::before {
-    left: auto;
-    right: -9px;
-    border-bottom: 10px solid #695fb1;
-    border-right: 10px solid transparent;
-}
 
 .msg-file-container{
     display: flex;
     flex-direction: column;
-    gap: .1em;
+    gap: .07em;
     margin-bottom: 3px;
+    border-radius: 15px 15px 5px 5px;
+    overflow: hidden;
 }
 
 .msg-file-container img,
@@ -587,7 +600,7 @@ main {
     font-size: .8em;
     background: rgba(0, 0, 0, .3);
     padding: .2em .5em;
-    border-radius: 10px;
+    border-radius: 5px;
 }
 
 .file-size-label{
@@ -712,7 +725,7 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(3px);
 }
 

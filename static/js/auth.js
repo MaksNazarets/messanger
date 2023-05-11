@@ -18,6 +18,8 @@ create_account_form.addEventListener('submit', (event) => {
     inputs.forEach(input => {
         input.classList.remove('error-input');
     });
+    const pass_group = document.querySelector('.password-group');
+    pass_group.classList.remove('error-input');
     const formData = new FormData(create_account_form);
     const url = "/create-account";
     const options = {
@@ -73,7 +75,6 @@ create_account_form.addEventListener('submit', (event) => {
                 new_un_input.classList.add('error-input');
             }
             if ('password' in errors) {
-                const pass_group = document.querySelector('.password-group');
                 insertNewElement('span', ['error-msg'], errors['password'], pass_group);
                 pass_group.classList.add('error-input');
             }

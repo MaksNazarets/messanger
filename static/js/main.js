@@ -42,13 +42,14 @@ socket.on('update_chat_list', (chatUsers) => {
     populateWithChatItems(chatUsers, chatList);
 });
 socket.on('get_chat_data', (chatData) => {
-    var _a;
+    var _a, _b;
     if (openChatCompanionId != 0)
         lastMsgSentAt[openChatCompanionId.toString()] = null;
     openChatCompanionId = chatData['companion']['id'];
     openChatCompanion = chatData['companion'];
     let companion = openChatCompanion;
     console.log(chatData);
+    (_a = document.querySelector('.right-panel-placeholder')) === null || _a === void 0 ? void 0 : _a.remove();
     rightPanel.classList.remove('hidden');
     // setting user online status
     const companionInfo = rightPanel.querySelector('.companion-info');
@@ -105,7 +106,7 @@ socket.on('get_chat_data', (chatData) => {
     // check if the media query is currently active
     if (window.innerWidth < 600) {
         console.log('The media query is currently active');
-        (_a = document.querySelector('.left-panel')) === null || _a === void 0 ? void 0 : _a.classList.add('hidden');
+        (_b = document.querySelector('.left-panel')) === null || _b === void 0 ? void 0 : _b.classList.add('hidden');
     }
 });
 socket.on('new-message', (msgData) => {
@@ -177,7 +178,6 @@ socket.on('companion-read-msgs', (readMsgs) => {
 });
 socket.on('message-removed', (message) => {
     console.log(message);
-    // if(openChatCompanionId == message.sender_id)
     const msgEl = chatScrollable.querySelector(`.message[data-id= '${message.id}']`);
     if (msgEl) {
         const prevSibling = msgEl.previousSibling;
@@ -186,11 +186,14 @@ socket.on('message-removed', (message) => {
             && (prevSibling === null || prevSibling === void 0 ? void 0 : prevSibling.classList.contains('date-divider'))) {
             chatScrollable.removeChild(nextSibling);
         }
-        chatScrollable.removeChild(msgEl);
-        const chatLastEl = chatScrollable.firstChild;
-        if (chatLastEl.classList.contains('date-divider')) {
-            chatScrollable.removeChild(chatLastEl);
-        }
+        msgEl.classList.add('blured');
+        setTimeout(() => {
+            chatScrollable.removeChild(msgEl);
+            const chatLastEl = chatScrollable.firstChild;
+            if (chatLastEl.classList.contains('date-divider')) {
+                chatScrollable.removeChild(chatLastEl);
+            }
+        }, 100);
     }
 });
 socket.on('chat-removed', (userId) => {
@@ -450,7 +453,7 @@ function populateChatWithMessages(messages) {
     thirdMessage = chatContainer.querySelector('.message:nth-last-of-type(3)');
 }
 document.querySelector('#new-message_send-button').addEventListener('click', () => {
-    if (msgInput.value.length > 0) {
+    if (msgInput.value.trim().length > 0) {
         socket.emit('send_message', { 'to_user_id': openChatCompanionId, 'text': msgInput.value });
         const unreadLabel = document.querySelector('.unread-msgs-section');
         if (unreadLabel)
@@ -482,16 +485,15 @@ msgInput.addEventListener("keyup", function (event) {
         document.body.removeChild(backdrop);
         attachFileWindow.classList.add('minimized', 'hidden');
         backdrop.onmousedown = null;
+        attachFileWindow.classList.add('minimized', 'hidden');
+        attachedFilesInput.value = '';
         fileContainer.innerHTML = '';
     };
-    if (!fileContainer.hasChildNodes()) {
-        const placeholder = document.createElement('span');
-        placeholder.className = 'file-placeholder';
-        placeholder.innerText = 'Нічого не вибрано...';
-        fileContainer.appendChild(placeholder);
-    }
-    else
-        document.querySelector('.send-file-btn').disabled = false;
+    const placeholder = document.createElement('span');
+    placeholder.className = 'file-placeholder';
+    placeholder.innerText = 'Нічого не вибрано...';
+    fileContainer.appendChild(placeholder);
+    document.querySelector('.send-file-btn').disabled = true;
 });
 (_b = document.querySelector('.choose-file-btn')) === null || _b === void 0 ? void 0 : _b.addEventListener('click', () => {
     document.querySelector('#attached-files').click();
@@ -510,7 +512,10 @@ attachedFilesInput === null || attachedFilesInput === void 0 ? void 0 : attached
             totalSize += f.size;
             if (totalSize > 5 * 1024 * 1024) {
                 new PopUpMessage('Максимальний розмір файлу - 5 МБ').show();
-                fileContainer.innerHTML = '';
+                const placeholder = document.createElement('span');
+                placeholder.className = 'file-placeholder';
+                placeholder.innerText = 'Нічого не вибрано...';
+                fileContainer.appendChild(placeholder);
                 attachedFilesInput.value = '';
             }
         }
@@ -539,6 +544,7 @@ attachedFilesInput === null || attachedFilesInput === void 0 ? void 0 : attached
     backdrop.onmousedown = null;
     document.body.removeChild(backdrop);
     attachFileWindow.classList.add('minimized', 'hidden');
+    attachedFilesInput.value = '';
     fileContainer.innerHTML = '';
 });
 searchInput.addEventListener('input', () => {

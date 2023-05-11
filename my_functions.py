@@ -2,7 +2,10 @@ from email_validator import validate_email, EmailNotValidError
 from models import User
 import re
 
-def get_data_errors(first_name: str, last_name: str, email: str, username: str, password: str = 'goodpassword123', db = None):
+def get_data_errors(first_name: str, last_name: str, 
+                    email: str, username: str, 
+                    password: str = 'goodpassword123', db = None, 
+                    allowed_data={'email': [], 'username': []}):
     errors = {}
 
     # Validate the form data
@@ -49,20 +52,19 @@ def get_data_errors(first_name: str, last_name: str, email: str, username: str, 
     elif len(password) > 255:
         errors['password'] = 'Пароль не може бути довше 255 символів'
 
-    # If there are errors, return them as a JSON response
 
     if db:
         try:
             identical_username_count = len(db.session.execute(
-                db.select(User).filter_by(username=username)).scalars().all())
+                db.select(User).filter_by(username=username)).all())
 
-            if identical_username_count > 0:
+            if identical_username_count > 0 and username not in allowed_data['username']:
                 errors['username'] = 'Цей логін вже зайнятий іншим користувачем'
 
             identical_email_count = len(db.session.execute(
-                db.select(User).filter_by(email=email)).scalars().all())
+                db.select(User).filter_by(email=email)).all())
 
-            if identical_email_count > 0:
+            if identical_email_count > 0 and email not in allowed_data['email']:
                 errors['email'] = 'До цієї ел. пошти вже прив\'язано обліковий запис'
 
         except:

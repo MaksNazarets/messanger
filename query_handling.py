@@ -52,7 +52,6 @@ def get_attachment():
     return send_file(os.path.join(path_to_folder, filename))
 
 
-
 @app.route('/get-me', methods=['POST'])
 def get_me():
     return current_user.to_dict()
@@ -91,12 +90,16 @@ def edit_profile_data():
 
     if current_pass and new_pass:
         errors = get_data_errors(
-            first_name, last_name, email, username, new_pass)
+            first_name, last_name, email, username, 
+            new_pass, db, allowed_data={'username': [user.username], 'email': [user.email]})
 
         if not check_password_hash(user.password, current_pass):
             errors['password'] = 'Поточний пароль неправильний'
     else:
-        errors = get_data_errors(first_name, last_name, email, username)
+        errors = get_data_errors(first_name, last_name, email, username, db=db, 
+                allowed_data={'username': [user.username], 'email': [user.email]})
+    
+    print('hello')
 
     if errors:
         return jsonify(errors=errors), 200
@@ -125,7 +128,8 @@ def edit_profile_data():
             photo.save(f"{directory}/1{extension}")
 
         socketio.emit('profile-data-update',
-                      user.to_dict())
+                      user.to_dict(), room=user.session_id)
+        
         return jsonify('Ok'), 200
 
     except:

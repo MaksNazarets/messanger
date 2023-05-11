@@ -33,6 +33,11 @@ export class PremiumWindow {
                 list.appendChild(item);
             })
 
+            const priceEl = document.createElement('span')
+            priceEl.style.marginBottom = '1em';
+            priceEl.style.fontStyle = 'italic';
+            priceEl.innerText = 'Вартість: 300 грн';
+
             const button = document.createElement('button');
             button.textContent = 'Отримати преміум статус';
 
@@ -173,8 +178,11 @@ export class PremiumWindow {
                         .then(response => response.json())
                         .then(data => {
                             this.hide()
-                            if (data.status === 'success')
+                            if (data.status === 'success'){
                                 new PopUpMessage('Дякуємо за покупку преміуму!').show();
+                                (document.querySelector('.premium-status-label') as HTMLElement)
+                                    .style.backgroundImage=`url('/static/img/star-premium-min.png')`;
+                            }
                             else
                                 new PopUpMessage('Не вдалося стягнути кошти :(').show();
                         })
@@ -186,6 +194,7 @@ export class PremiumWindow {
 
             this.wrapper.appendChild(heading);
             this.wrapper.appendChild(list);
+            this.wrapper.appendChild(priceEl);
             this.wrapper.appendChild(button);
 
             this.parentEl.appendChild(this.wrapper);

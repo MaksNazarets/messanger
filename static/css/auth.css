@@ -94,6 +94,7 @@ button:active {
 }
 
 .password-group{
+    border-radius: 15px;
     position: relative;
     display: flex;
 }
@@ -135,6 +136,10 @@ button:active {
 
 .error-input{
     outline-color: red;
+}
+
+.password-group.error-input{
+    outline: 1px solid red;
 }
 
 .success-msg{
